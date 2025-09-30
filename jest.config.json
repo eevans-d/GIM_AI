@@ -9,7 +9,14 @@
     "!**/node_modules/**"
   ],
   "testMatch": [
-    "**/tests/**/*.test.js"
+    "**/tests/**/*.test.js",
+    "**/tests/**/*.spec.js"
+  ],
+  "testPathIgnorePatterns": [
+    "/node_modules/"
+  ],
+  "transformIgnorePatterns": [
+    "node_modules/(?!(@supabase|@so-ric)/)"
   ],
   "coverageThreshold": {
     "global": {
@@ -18,5 +25,7 @@
       "lines": 70,
       "statements": 70
     }
-  }
+  },
+  "verbose": true,
+  "testTimeout": 10000
 }
