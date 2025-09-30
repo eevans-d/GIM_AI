@@ -1,0 +1,298 @@
+{
+  "name": "GIM_AI Daily Collection Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Daily at 9:00 AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  m.id, m.phone, m.first_name, m.email,\n  p.id as payment_id, p.amount, p.days_overdue, p.due_date,\n  p.collection_attempts\nFROM members m\nJOIN payments p ON m.id = p.member_id\nWHERE p.status = 'pending'\n  AND p.due_date < CURRENT_DATE\n  AND m.is_active = true\n  AND m.whatsapp_opted_in = true\nORDER BY p.days_overdue DESC"
+      },
+      "id": "get-overdue-payments",
+      "name": "Get Overdue Payments",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Group payments by days overdue\nconst items = $input.all();\n\nconst groups = {\n  d0: [],\n  d3: [],\n  d7: [],\n  d14: []\n};\n\nitems.forEach(item => {\n  const days = item.json.days_overdue;\n  \n  if (days === 0) {\n    groups.d0.push(item.json);\n  } else if (days === 3) {\n    groups.d3.push(item.json);\n  } else if (days === 7) {\n    groups.d7.push(item.json);\n  } else if (days >= 14) {\n    groups.d14.push(item.json);\n  }\n});\n\nreturn Object.entries(groups).map(([key, items]) => ({\n  json: { group: key, count: items.length, payments: items }\n}));"
+      },
+      "id": "group-by-days",
+      "name": "Group by Days Overdue",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "payments",
+        "options": {}
+      },
+      "id": "split-payments",
+      "name": "Split Payments",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.group}}",
+              "operation": "equals",
+              "value2": "d0"
+            }
+          ]
+        }
+      },
+      "id": "route-d0",
+      "name": "Route D0",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.group}}",
+              "operation": "equals",
+              "value2": "d3"
+            }
+          ]
+        }
+      },
+      "id": "route-d3",
+      "name": "Route D3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 250]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.group}}",
+              "operation": "equals",
+              "value2": "d7"
+            }
+          ]
+        }
+      },
+      "id": "route-d7",
+      "name": "Route D7",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.group}}",
+              "operation": "equals",
+              "value2": "d14"
+            }
+          ]
+        }
+      },
+      "id": "route-d14",
+      "name": "Route D14",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 550]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"to\": \"{{$json.phone}}\",\n  \"templateName\": \"recordatorio_pago_d0\",\n  \"params\": {\n    \"name\": \"{{$json.first_name}}\",\n    \"amount\": \"{{$json.amount}}\",\n    \"link\": \"https://pay.gym.com/{{$json.payment_id}}\"\n  }\n}"
+      },
+      "id": "send-d0",
+      "name": "Send D0 Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 100]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"to\": \"{{$json.phone}}\",\n  \"templateName\": \"recordatorio_pago_d3\",\n  \"params\": {\n    \"name\": \"{{$json.first_name}}\",\n    \"amount\": \"{{$json.amount}}\"\n  }\n}"
+      },
+      "id": "send-d3",
+      "name": "Send D3 Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 250]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"to\": \"{{$json.phone}}\",\n  \"templateName\": \"recordatorio_pago_d7\",\n  \"params\": {\n    \"name\": \"{{$json.first_name}}\",\n    \"amount\": \"{{$json.amount}}\",\n    \"phone\": \"{{$env.GYM_PHONE}}\"\n  }\n}"
+      },
+      "id": "send-d7",
+      "name": "Send D7 Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "// D14: Escalate to human, don't send automated message\nreturn {\n  json: {\n    action: 'escalate_to_human',\n    member_id: $json.id,\n    member_name: $json.first_name,\n    phone: $json.phone,\n    debt_amount: $json.amount,\n    days_overdue: $json.days_overdue,\n    payment_id: $json.payment_id,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "escalate-d14",
+      "name": "Escalate to Human",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1250, 550]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "payments",
+        "id": "={{$json.payment_id}}",
+        "data": "={\n  \"collection_attempts\": {{$json.collection_attempts + 1}},\n  \"last_collection_attempt_at\": \"{{$now.toISO()}}\",\n  \"collection_method\": \"whatsapp\"\n}"
+      },
+      "id": "update-attempts",
+      "name": "Update Collection Attempts",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "incidents",
+        "data": "={\n  \"title\": \"Deuda D14+ requiere atención\",\n  \"description\": \"Socio {{$json.member_name}} tiene {{$json.days_overdue}} días de atraso. Monto: ${{$json.debt_amount}}\",\n  \"category\": \"cobranza\",\n  \"severity\": \"high\",\n  \"status\": \"open\"\n}"
+      },
+      "id": "create-incident",
+      "name": "Create Incident Ticket",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1450, 550],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Aggregate results\nconst allItems = $input.all();\n\nconst summary = {\n  timestamp: new Date().toISOString(),\n  total_processed: allItems.length,\n  by_group: {\n    d0: allItems.filter(i => i.json.group === 'd0').length,\n    d3: allItems.filter(i => i.json.group === 'd3').length,\n    d7: allItems.filter(i => i.json.group === 'd7').length,\n    d14: allItems.filter(i => i.json.group === 'd14').length\n  },\n  messages_sent: allItems.filter(i => i.json.action !== 'escalate_to_human').length,\n  escalated: allItems.filter(i => i.json.action === 'escalate_to_human').length\n};\n\nreturn { json: summary };"
+      },
+      "id": "summary",
+      "name": "Generate Summary",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.N8N_WEBHOOK_URL}}/daily-collection-complete",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{JSON.stringify($json)}}"
+      },
+      "id": "notify-complete",
+      "name": "Notify Completion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 300]
+    }
+  ],
+  "connections": {
+    "Daily at 9:00 AM": {
+      "main": [[{"node": "Get Overdue Payments", "type": "main", "index": 0}]]
+    },
+    "Get Overdue Payments": {
+      "main": [[{"node": "Group by Days Overdue", "type": "main", "index": 0}]]
+    },
+    "Group by Days Overdue": {
+      "main": [[{"node": "Split Payments", "type": "main", "index": 0}]]
+    },
+    "Split Payments": {
+      "main": [[
+        {"node": "Route D0", "type": "main", "index": 0},
+        {"node": "Route D3", "type": "main", "index": 0},
+        {"node": "Route D7", "type": "main", "index": 0},
+        {"node": "Route D14", "type": "main", "index": 0}
+      ]]
+    },
+    "Route D0": {
+      "main": [[{"node": "Send D0 Message", "type": "main", "index": 0}]]
+    },
+    "Route D3": {
+      "main": [[{"node": "Send D3 Message", "type": "main", "index": 0}]]
+    },
+    "Route D7": {
+      "main": [[{"node": "Send D7 Message", "type": "main", "index": 0}]]
+    },
+    "Route D14": {
+      "main": [[{"node": "Escalate to Human", "type": "main", "index": 0}]]
+    },
+    "Send D0 Message": {
+      "main": [[{"node": "Update Collection Attempts", "type": "main", "index": 0}]]
+    },
+    "Send D3 Message": {
+      "main": [[{"node": "Update Collection Attempts", "type": "main", "index": 0}]]
+    },
+    "Send D7 Message": {
+      "main": [[{"node": "Update Collection Attempts", "type": "main", "index": 0}]]
+    },
+    "Escalate to Human": {
+      "main": [[{"node": "Create Incident Ticket", "type": "main", "index": 0}]]
+    },
+    "Update Collection Attempts": {
+      "main": [[{"node": "Generate Summary", "type": "main", "index": 0}]]
+    },
+    "Create Incident Ticket": {
+      "main": [[{"node": "Generate Summary", "type": "main", "index": 0}]]
+    },
+    "Generate Summary": {
+      "main": [[{"node": "Notify Completion", "type": "main", "index": 0}]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionTimeout": 600
+  },
+  "id": "daily-collection-flow"
+}
