@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GIM_AI - Check-in</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status.warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .details {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .details-row:last-child {
+            border-bottom: none;
+        }
+        
+        .details-label {
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .details-value {
+            color: #333;
+            font-weight: 700;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏋️‍♂️</div>
+        <h1>GIM_AI Check-in</h1>
+        <p class="subtitle">Bienvenido a tu gimnasio inteligente</p>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="status loading">
+            <div class="loader"></div>
+            <p>Procesando check-in...</p>
+        </div>
+        
+        <!-- Success State -->
+        <div id="successState" class="status success hidden">
+            <div class="icon">✅</div>
+            <p>¡Check-in exitoso!</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="errorState" class="status error hidden">
+            <div class="icon">❌</div>
+            <p id="errorMessage">Error al procesar check-in</p>
+        </div>
+        
+        <!-- Warning State (Debt) -->
+        <div id="warningState" class="status warning hidden">
+            <div class="icon">⚠️</div>
+            <p>Check-in registrado - Tienes un pago pendiente</p>
+        </div>
+        
+        <!-- Details -->
+        <div id="detailsContainer" class="details hidden">
+            <div class="details-row">
+                <span class="details-label">Socio:</span>
+                <span class="details-value" id="memberName">-</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">Hora:</span>
+                <span class="details-value" id="checkInTime">-</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">Clase:</span>
+                <span class="details-value" id="className">-</span>
+            </div>
+            <div class="details-row hidden" id="debtRow">
+                <span class="details-label">Deuda:</span>
+                <span class="details-value" id="debtAmount" style="color: #c62828;">-</span>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div id="actionsContainer" class="hidden">
+            <button class="button" onclick="openWhatsApp()">Abrir WhatsApp</button>
+            <button class="button secondary" onclick="goBack()">Volver</button>
+        </div>
+    </div>
+    
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const memberId = urlParams.get('m');
+        const phone = urlParams.get('p');
+        const source = urlParams.get('s') || 'qr_cliente';
+        
+        // API Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : '/api';
+        
+        // Process check-in on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!memberId && !phone) {
+                showError('Código QR inválido. Por favor, contacta a recepción.');
+                return;
+            }
+            
+            processCheckIn();
+        });
+        
+        async function processCheckIn() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/checkin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        member_id: memberId,
+                        phone: phone,
+                        source: source,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showSuccess(data);
+                } else {
+                    showError(data.message || 'Error al procesar check-in');
+                }
+            } catch (error) {
+                console.error('Check-in error:', error);
+                showError('Error de conexión. Por favor, intenta nuevamente.');
+            }
+        }
+        
+        function showSuccess(data) {
+            hideElement('loadingState');
+            
+            // Show appropriate status
+            if (data.hasDebt) {
+                showElement('warningState');
+                showElement('debtRow');
+                document.getElementById('debtAmount').textContent = `$${data.debtAmount}`;
+            } else {
+                showElement('successState');
+            }
+            
+            // Show details
+            showElement('detailsContainer');
+            document.getElementById('memberName').textContent = data.memberName || 'Usuario';
+            document.getElementById('checkInTime').textContent = new Date().toLocaleTimeString('es-AR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('className').textContent = data.className || 'Acceso libre';
+            
+            // Show actions
+            showElement('actionsContainer');
+            
+            // Auto-open WhatsApp if configured
+            if (data.autoOpenWhatsApp) {
+                setTimeout(() => openWhatsApp(), 2000);
+            }
+        }
+        
+        function showError(message) {
+            hideElement('loadingState');
+            showElement('errorState');
+            document.getElementById('errorMessage').textContent = message;
+            showElement('actionsContainer');
+        }
+        
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        
+        function openWhatsApp() {
+            const whatsappNumber = '+5491234567890'; // Replace with actual WhatsApp Business number
+            const message = 'Hola, acabo de hacer check-in en el gimnasio 💪';
+            const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.location.href = url;
+        }
+        
+        function goBack() {
+            // Clear URL parameters and reload
+            window.location.href = window.location.pathname;
+        }
+    </script>
+</body>
+</html>

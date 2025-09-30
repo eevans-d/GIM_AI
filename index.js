@@ -25,8 +25,19 @@ app.use(cors()); // CORS
 app.use(express.json()); // JSON body parser
 app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
+// Add correlation ID middleware
+app.use((req, res, next) => {
+  req.correlationId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  next();
+});
+
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'frontend')));
+app.use('/frontend', express.static(path.join(__dirname, 'frontend')));
+
+// Import API routes
+const checkinRoutes = require('./routes/api/checkin');
+const qrRoutes = require('./routes/api/qr');
 
 // Basic routes
 app.get('/', (req, res) => {
@@ -38,10 +49,15 @@ app.get('/', (req, res) => {
       health: '/health',
       webhooks: '/webhook',
       checkin: '/api/checkin',
+      qr: '/api/qr',
       dashboard: '/api/dashboard'
     }
   });
 });
+
+// API Routes
+app.use('/api/checkin', checkinRoutes);
+app.use('/api/qr', qrRoutes);
 
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
