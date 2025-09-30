@@ -13,6 +13,7 @@ const path = require('path');
 const { createLogger } = require('./utils/logger');
 const { errorMiddleware } = require('./utils/error-handler');
 const { healthEndpoint } = require('./monitoring/health/system-health');
+const { initializeCronJobs } = require('./services/reminder-service');
 const logger = createLogger('app');
 
 // Initialize Express app
@@ -38,6 +39,7 @@ app.use('/frontend', express.static(path.join(__dirname, 'frontend')));
 // Import API routes
 const checkinRoutes = require('./routes/api/checkin');
 const qrRoutes = require('./routes/api/qr');
+const remindersRoutes = require('./routes/api/reminders');
 
 // Basic routes
 app.get('/', (req, res) => {
@@ -58,6 +60,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/qr', qrRoutes);
+app.use('/api/reminders', remindersRoutes);
 
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
@@ -123,6 +126,8 @@ Available endpoints:
   → http://localhost:${PORT}/
   → http://localhost:${PORT}/health
   → http://localhost:${PORT}/webhook/whatsapp
+  → http://localhost:${PORT}/api/checkin
+  → http://localhost:${PORT}/api/qr
   `;
   
   console.log(startupMessage);
@@ -130,6 +135,14 @@ Available endpoints:
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
   });
+  
+  // Initialize automated reminder cron jobs
+  try {
+    initializeCronJobs();
+    logger.info('Automated reminder system initialized');
+  } catch (error) {
+    logger.error('Failed to initialize reminder system', { error: error.message });
+  }
 });
 
 // Graceful shutdown
