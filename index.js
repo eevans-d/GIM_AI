@@ -12,6 +12,7 @@ const path = require('path');
 // Import centralized logger and error handler
 const { createLogger } = require('./utils/logger');
 const { errorMiddleware } = require('./utils/error-handler');
+const { healthEndpoint } = require('./monitoring/health/system-health');
 const logger = createLogger('app');
 
 // Initialize Express app
@@ -42,15 +43,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
+// Health check endpoint (enhanced)
+app.get('/health', healthEndpoint());
 
 // Webhook endpoint for WhatsApp (to be implemented)
 app.post('/webhook/whatsapp', async (req, res) => {
