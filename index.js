@@ -65,6 +65,14 @@ app.use('/api/reminders', remindersRoutes);
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
 
+// Minimal endpoint for E2E test redirection check (only in test env)
+if (process.env.NODE_ENV === 'test') {
+  app.get('/checkin', (req, res) => {
+    const { qr } = req.query;
+    return res.status(200).json({ success: true, qr });
+  });
+}
+
 // Webhook endpoint for WhatsApp (to be implemented)
 app.post('/webhook/whatsapp', async (req, res) => {
   try {
@@ -110,8 +118,10 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server only when run directly (not when required by tests)
+let server;
+if (require.main === module && process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
   const startupMessage = `
 ╔═══════════════════════════════════════════════════════════╗
 ║                      GIM_AI Server                        ║
@@ -143,15 +153,20 @@ Available endpoints:
   } catch (error) {
     logger.error('Failed to initialize reminder system', { error: error.message });
   }
-});
+  });
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.warn('SIGTERM signal received: closing HTTP server');
-  app.close(() => {
-    logger.info('HTTP server closed gracefully');
+  if (server && typeof server.close === 'function') {
+    server.close(() => {
+      logger.info('HTTP server closed gracefully');
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
 });
 
 // Handle uncaught exceptions

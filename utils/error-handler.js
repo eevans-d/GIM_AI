@@ -278,8 +278,11 @@ class ErrorAggregator {
 
 const errorAggregator = new ErrorAggregator();
 
-// Limpiar agregador cada 5 minutos
-setInterval(() => errorAggregator.cleanup(), 300000);
+// Limpiar agregador cada 5 minutos (no mantener vivos los tests)
+const _aggregatorCleanup = setInterval(() => errorAggregator.cleanup(), 300000);
+if (_aggregatorCleanup && typeof _aggregatorCleanup.unref === 'function') {
+  _aggregatorCleanup.unref();
+}
 
 /**
  * Determinar severidad de escalamiento
@@ -359,7 +362,30 @@ async function handleError(error, context = {}) {
  */
 function errorMiddleware() {
   return async (err, req, res, _next) => {
-    const appError = await handleError(err, {
+    // Detectar errores de parseo de JSON (body-parser / express.json)
+    // y convertirlos en errores de validación 400 en lugar de 500
+    let normalizedError = err;
+    try {
+      const isJsonRequest = typeof req?.headers?.['content-type'] === 'string' &&
+        req.headers['content-type'].toLowerCase().includes('application/json');
+      const isParseError = err && (
+        err.type === 'entity.parse.failed' ||
+        (err instanceof SyntaxError && /json|unexpected token/i.test(err.message || ''))
+      );
+
+      if (isJsonRequest && isParseError) {
+        normalizedError = new AppError(
+          'Invalid JSON payload',
+          ErrorTypes.VALIDATION,
+          400,
+          { originalError: err.message }
+        );
+      }
+    } catch (_e) {
+      // En caso de cualquier fallo en la normalización, continuar con el error original
+    }
+
+    const appError = await handleError(normalizedError, {
       url: req.url,
       method: req.method,
       ip: req.ip,
