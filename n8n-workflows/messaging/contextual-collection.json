@@ -1,0 +1,226 @@
+{
+  "name": "GIM_AI Contextual Collection Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contextual-collection-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Check-in with Debt",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "notes": "Triggered by check-in flow when member has debt"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract data from check-in\nconst memberId = $json.member_id;\nconst debtAmount = $json.debt_amount;\nconst debtDays = $json.debt_days;\nconst memberName = $json.member_name;\nconst memberPhone = $json.member_phone;\n\nif (!memberId || !debtAmount || debtAmount <= 0) {\n  throw new Error('Invalid debt data');\n}\n\nreturn {\n  json: {\n    member_id: memberId,\n    member_name: memberName,\n    member_phone: memberPhone,\n    debt_amount: debtAmount,\n    debt_days: debtDays,\n    checkin_time: new Date().toISOString(),\n    message_scheduled_for: new Date(Date.now() + 90 * 60 * 1000).toISOString() // 90 min\n  }\n};"
+      },
+      "id": "extract-data",
+      "name": "Extract Check-in Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"scheduled\": true,\n  \"message_at\": \"{{$json.message_scheduled_for}}\"\n}"
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "minutes"
+      },
+      "id": "wait-90min",
+      "name": "Wait 90 Minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "notes": "Wait for post-workout optimal timing"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  p.id as payment_id,\n  p.amount,\n  p.days_overdue,\n  p.status,\n  p.collection_attempts\nFROM payments p\nWHERE p.member_id = '={{$json.member_id}}'\n  AND p.status = 'pending'\n  AND p.due_date < CURRENT_DATE\nORDER BY p.due_date ASC\nLIMIT 1"
+      },
+      "id": "check-payment-status",
+      "name": "Check Payment Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      },
+      "notes": "Verify debt still exists (maybe they paid during workout)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.length}}",
+              "value2": 0,
+              "operation": "larger"
+            }
+          ]
+        }
+      },
+      "id": "still-has-debt",
+      "name": "Still Has Debt?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as daily_count\nFROM whatsapp_messages\nWHERE phone_number = '={{$node[\"Extract Check-in Data\"].json.member_phone}}'\n  AND direction = 'outbound'\n  AND DATE(created_at) = CURRENT_DATE"
+      },
+      "id": "check-rate-limit",
+      "name": "Check Rate Limit",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1450, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.daily_count}}",
+              "value2": 2,
+              "operation": "smaller"
+            }
+          ]
+        }
+      },
+      "id": "within-limit",
+      "name": "Within Rate Limit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"to\": \"{{$node[\"Extract Check-in Data\"].json.member_phone}}\",\n  \"templateName\": \"cobranza_contextual\",\n  \"params\": {\n    \"name\": \"{{$node[\"Extract Check-in Data\"].json.member_name}}\",\n    \"amount\": \"{{$node[\"Check Payment Status\"].json[0].amount}}\"\n  }\n}"
+      },
+      "id": "send-contextual-message",
+      "name": "Send Contextual Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 100]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "payments",
+        "id": "={{$node[\"Check Payment Status\"].json[0].payment_id}}",
+        "data": "={\n  \"collection_attempts\": {{$node[\"Check Payment Status\"].json[0].collection_attempts + 1}},\n  \"last_collection_attempt_at\": \"{{$now.toISO()}}\",\n  \"collection_method\": \"whatsapp_contextual\"\n}"
+      },
+      "id": "update-payment",
+      "name": "Update Payment Record",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2050, 100],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Log contextual collection attempt\nreturn {\n  json: {\n    event: 'contextual_collection_sent',\n    member_id: $node[\"Extract Check-in Data\"].json.member_id,\n    payment_id: $node[\"Check Payment Status\"].json[0].payment_id,\n    amount: $node[\"Check Payment Status\"].json[0].amount,\n    days_overdue: $node[\"Check Payment Status\"].json[0].days_overdue,\n    checkin_time: $node[\"Extract Check-in Data\"].json.checkin_time,\n    message_sent_at: new Date().toISOString(),\n    time_after_checkin_minutes: 90,\n    success: true\n  }\n};"
+      },
+      "id": "log-attempt",
+      "name": "Log Collection Attempt",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [2250, 100]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Debt was paid or no longer exists\nreturn {\n  json: {\n    event: 'contextual_collection_skipped',\n    reason: 'debt_resolved',\n    member_id: $node[\"Extract Check-in Data\"].json.member_id,\n    checkin_time: $node[\"Extract Check-in Data\"].json.checkin_time,\n    check_time: new Date().toISOString()\n  }\n};"
+      },
+      "id": "log-skip-paid",
+      "name": "Log Skip - Debt Paid",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Rate limit exceeded\nreturn {\n  json: {\n    event: 'contextual_collection_skipped',\n    reason: 'rate_limit_exceeded',\n    member_id: $node[\"Extract Check-in Data\"].json.member_id,\n    daily_count: $node[\"Check Rate Limit\"].json.daily_count,\n    checkin_time: $node[\"Extract Check-in Data\"].json.checkin_time\n  }\n};"
+      },
+      "id": "log-skip-rate",
+      "name": "Log Skip - Rate Limit",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Check-in with Debt": {
+      "main": [[{"node": "Extract Check-in Data", "type": "main", "index": 0}]]
+    },
+    "Extract Check-in Data": {
+      "main": [[{"node": "Respond OK", "type": "main", "index": 0}]]
+    },
+    "Respond OK": {
+      "main": [[{"node": "Wait 90 Minutes", "type": "main", "index": 0}]]
+    },
+    "Wait 90 Minutes": {
+      "main": [[{"node": "Check Payment Status", "type": "main", "index": 0}]]
+    },
+    "Check Payment Status": {
+      "main": [[{"node": "Still Has Debt?", "type": "main", "index": 0}]]
+    },
+    "Still Has Debt?": {
+      "main": [
+        [{"node": "Check Rate Limit", "type": "main", "index": 0}],
+        [{"node": "Log Skip - Debt Paid", "type": "main", "index": 0}]
+      ]
+    },
+    "Check Rate Limit": {
+      "main": [[{"node": "Within Rate Limit?", "type": "main", "index": 0}]]
+    },
+    "Within Rate Limit?": {
+      "main": [
+        [{"node": "Send Contextual Message", "type": "main", "index": 0}],
+        [{"node": "Log Skip - Rate Limit", "type": "main", "index": 0}]
+      ]
+    },
+    "Send Contextual Message": {
+      "main": [[{"node": "Update Payment Record", "type": "main", "index": 0}]]
+    },
+    "Update Payment Record": {
+      "main": [[{"node": "Log Collection Attempt", "type": "main", "index": 0}]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "contextual-collection-flow"
+}

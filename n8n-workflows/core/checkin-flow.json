@@ -1,0 +1,231 @@
+{
+  "name": "GIM_AI Check-in Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "checkin",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-checkin",
+      "name": "Webhook Check-in",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "checkin-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate incoming data\nconst phone = $json.phone;\nconst source = $json.source || 'manual';\nconst classId = $json.class_id;\nconst location = $json.location;\n\nif (!phone) {\n  throw new Error('Phone number is required');\n}\n\n// Clean phone number\nconst cleanPhone = phone.replace(/\\D/g, '');\n\nreturn {\n  json: {\n    phone: cleanPhone,\n    source,\n    class_id: classId,\n    location,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "members",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{$json.phone}}"
+            },
+            {
+              "keyName": "is_active",
+              "keyValue": true
+            }
+          ]
+        }
+      },
+      "id": "find-member",
+      "name": "Find Member",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.length}}",
+              "value2": 0,
+              "operation": "larger"
+            }
+          ]
+        }
+      },
+      "id": "member-exists",
+      "name": "Member Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM get_member_debt_status('={{$node[\"Find Member\"].json[0].id}}')"
+      },
+      "id": "check-debt",
+      "name": "Check Debt Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "checkins",
+        "data": "={\n  \"member_id\": \"{{$node[\"Find Member\"].json[0].id}}\",\n  \"class_id\": \"{{$node[\"Validate Input\"].json.class_id}}\",\n  \"source\": \"{{$node[\"Validate Input\"].json.source}}\",\n  \"location\": \"{{$node[\"Validate Input\"].json.location}}\",\n  \"has_debt\": {{$node[\"Check Debt Status\"].json.has_debt}},\n  \"debt_amount\": {{$node[\"Check Debt Status\"].json.debt_amount || 0}},\n  \"debt_days\": {{$node[\"Check Debt Status\"].json.days_overdue || 0}}\n}"
+      },
+      "id": "insert-checkin",
+      "name": "Insert Check-in",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1250, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase GIM_AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"Check Debt Status\"].json.has_debt}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "has-debt",
+      "name": "Has Debt?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"to\": \"{{$node[\"Find Member\"].json[0].phone}}\",\n  \"templateName\": \"checkin_confirmado\",\n  \"params\": {\n    \"name\": \"{{$node[\"Find Member\"].json[0].first_name}}\",\n    \"class\": \"{{$node[\"Validate Input\"].json.location || 'gimnasio'}}\",\n    \"time\": \"{{$now.toFormat('HH:mm')}}\"\n  }\n}"
+      },
+      "id": "send-confirmation",
+      "name": "Send WhatsApp Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 100]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/whatsapp/send-template",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"to\": \"{{$node[\"Find Member\"].json[0].phone}}\",\n  \"templateName\": \"cobranza_contextual\",\n  \"params\": {\n    \"name\": \"{{$node[\"Find Member\"].json[0].first_name}}\",\n    \"amount\": \"{{$node[\"Check Debt Status\"].json.debt_amount}}\"\n  },\n  \"options\": {\n    \"delay\": 5400000\n  }\n}"
+      },
+      "id": "flag-debt",
+      "name": "Flag for Contextual Collection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 300],
+      "notes": "Send after 90 minutes"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Schedule satisfaction survey for 90 minutes after check-in\nconst memberId = $node[\"Find Member\"].json[0].id;\nconst memberName = $node[\"Find Member\"].json[0].first_name;\nconst memberPhone = $node[\"Find Member\"].json[0].phone;\nconst classId = $node[\"Validate Input\"].json.class_id;\n\nreturn {\n  json: {\n    action: 'schedule_feedback',\n    member_id: memberId,\n    member_name: memberName,\n    member_phone: memberPhone,\n    class_id: classId,\n    scheduled_for: new Date(Date.now() + 90 * 60 * 1000).toISOString()\n  }\n};"
+      },
+      "id": "schedule-feedback",
+      "name": "Schedule Feedback Survey",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1850, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"checkin_id\": \"{{$node[\"Insert Check-in\"].json.id}}\",\n  \"member\": {\n    \"name\": \"{{$node[\"Find Member\"].json[0].first_name}} {{$node[\"Find Member\"].json[0].last_name}}\",\n    \"has_debt\": {{$node[\"Check Debt Status\"].json.has_debt}}\n  },\n  \"message\": \"Check-in exitoso\",\n  \"timestamp\": \"{{$now.toISO()}}\"\n}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2050, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 404,
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Socio no encontrado\",\n  \"phone\": \"{{$node[\"Validate Input\"].json.phone}}\"\n}"
+      },
+      "id": "respond-not-found",
+      "name": "Respond Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Check-in": {
+      "main": [[{"node": "Validate Input", "type": "main", "index": 0}]]
+    },
+    "Validate Input": {
+      "main": [[{"node": "Find Member", "type": "main", "index": 0}]]
+    },
+    "Find Member": {
+      "main": [[{"node": "Member Exists?", "type": "main", "index": 0}]]
+    },
+    "Member Exists?": {
+      "main": [
+        [{"node": "Check Debt Status", "type": "main", "index": 0}],
+        [{"node": "Respond Not Found", "type": "main", "index": 0}]
+      ]
+    },
+    "Check Debt Status": {
+      "main": [[{"node": "Insert Check-in", "type": "main", "index": 0}]]
+    },
+    "Insert Check-in": {
+      "main": [[{"node": "Has Debt?", "type": "main", "index": 0}]]
+    },
+    "Has Debt?": {
+      "main": [
+        [{"node": "Send WhatsApp Confirmation", "type": "main", "index": 0}],
+        [{"node": "Flag for Contextual Collection", "type": "main", "index": 0}]
+      ]
+    },
+    "Send WhatsApp Confirmation": {
+      "main": [[{"node": "Schedule Feedback Survey", "type": "main", "index": 0}]]
+    },
+    "Flag for Contextual Collection": {
+      "main": [[{"node": "Schedule Feedback Survey", "type": "main", "index": 0}]]
+    },
+    "Schedule Feedback Survey": {
+      "main": [[{"node": "Respond Success", "type": "main", "index": 0}]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "checkin-flow"
+}

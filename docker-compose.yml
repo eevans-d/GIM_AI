@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for local development
+  postgres:
+    image: postgres:15-alpine
+    container_name: gim-ai-postgres
+    environment:
+      POSTGRES_USER: gim_ai_user
+      POSTGRES_PASSWORD: gim_ai_password
+      POSTGRES_DB: gim_ai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schemas:/docker-entrypoint-initdb.d
+    networks:
+      - gim-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gim_ai_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for queues and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: gim-ai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gim-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # n8n workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: gim-ai-n8n
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/Argentina/Buenos_Aires
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=gim_ai_db
+      - DB_POSTGRESDB_USER=gim_ai_user
+      - DB_POSTGRESDB_PASSWORD=gim_ai_password
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-workflows:/workflows
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gim-ai-network
+    restart: unless-stopped
+
+  # GIM_AI Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gim-ai-api
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gim-ai-network
+    restart: unless-stopped
+    command: npm run dev
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gim-ai-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gim-ai.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - gim-ai-network
+    profiles:
+      - tools
+
+networks:
+  gim-ai-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:
+  pgadmin_data:
