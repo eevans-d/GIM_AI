@@ -15,9 +15,17 @@
   "testPathIgnorePatterns": [
     "/node_modules/"
   ],
+  "transform": {
+    "^.+\\.js$": "babel-jest"
+  },
   "transformIgnorePatterns": [
-    "node_modules/(?!(@supabase|@so-ric)/)"
+    "node_modules/(?!(@supabase|@so-ric|color|color-string|@dabh|diagnostics)/)"
   ],
+  "moduleNameMapper": {
+    "^winston$": "<rootDir>/tests/__mocks__/winston.js",
+    "^winston-daily-rotate-file$": "<rootDir>/tests/__mocks__/winston-daily-rotate-file.js",
+    "^uuid$": "<rootDir>/tests/__mocks__/uuid.js"
+  },
   "coverageThreshold": {
     "global": {
       "branches": 70,
@@ -27,5 +35,6 @@
     }
   },
   "verbose": true,
-  "testTimeout": 10000
+  "testTimeout": 10000,
+  "setupFiles": ["<rootDir>/tests/jest.setup.js"]
 }
