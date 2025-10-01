@@ -1,0 +1,951 @@
+{
+  "extraction_metadata": {
+    "timestamp": "2024-01-20T00:00:00Z",
+    "repository": "eevans-d/GIM_AI",
+    "extraction_tool": "GitHub Copilot Analysis",
+    "version": "1.0.0"
+  },
+  
+  "prompt_1_project_metadata": {
+    "project_metadata": {
+      "name": "GIM_AI (gim-ai)",
+      "version": "1.0.0",
+      "description": "Sistema Agéntico Inteligente para Gestión de Gimnasios - AI-powered gym management system with WhatsApp integration and QR check-in. Automatiza operaciones mediante IA, WhatsApp Business API y check-in por QR para maximizar eficiencia operativa, reducir morosidad y mejorar la experiencia del cliente.",
+      "evidence_source": "package.json line 2-4, README.md lines 3-5",
+      "repository_structure": {
+        "total_files": 81,
+        "total_lines_of_code": 5351,
+        "javascript_files": 20,
+        "sql_files": 7,
+        "json_files": 7,
+        "markdown_files": 8,
+        "main_directories": [
+          {
+            "name": "database",
+            "purpose": "Database schemas, migrations, seeds, and queries for PostgreSQL/Supabase",
+            "subdirectories": ["schemas", "migrations", "seeds", "queries"]
+          },
+          {
+            "name": "whatsapp",
+            "purpose": "WhatsApp Business API client with sender, webhook, templates, and logging",
+            "subdirectories": ["client", "templates"]
+          },
+          {
+            "name": "services",
+            "purpose": "Business logic services (QR, reminders, automation)",
+            "files": ["qr-service.js", "reminder-service.js"]
+          },
+          {
+            "name": "routes",
+            "purpose": "Express API route handlers",
+            "subdirectories": ["api"],
+            "files": ["checkin.js", "qr.js", "reminders.js"]
+          },
+          {
+            "name": "utils",
+            "purpose": "Shared utilities (logging, error handling)",
+            "files": ["logger.js", "error-handler.js"]
+          },
+          {
+            "name": "security",
+            "purpose": "Authentication and security systems",
+            "subdirectories": ["authentication"]
+          },
+          {
+            "name": "monitoring",
+            "purpose": "System health checks and monitoring",
+            "subdirectories": ["health"]
+          },
+          {
+            "name": "n8n-workflows",
+            "purpose": "Automation workflows for n8n",
+            "subdirectories": ["core", "messaging"],
+            "files": ["checkin-flow.json", "collection-flow.json", "contextual-collection.json"]
+          },
+          {
+            "name": "tests",
+            "purpose": "Testing suite (unit, integration, e2e, security)",
+            "subdirectories": ["unit", "integration", "e2e", "security"]
+          },
+          {
+            "name": "frontend",
+            "purpose": "Web interfaces for QR check-in and dashboards",
+            "subdirectories": ["qr-checkin"]
+          },
+          {
+            "name": "config",
+            "purpose": "Configuration files",
+            "files": ["whatsapp.config.js"]
+          },
+          {
+            "name": "docs",
+            "purpose": "Complete project documentation",
+            "files": ["INFORME_DIAGNOSTICO.md", "IMPLEMENTATION_STATUS.md", "prompt-*.md"]
+          }
+        ]
+      },
+      "primary_language": "JavaScript (Node.js)",
+      "secondary_languages": ["SQL", "JSON", "Markdown", "YAML"],
+      "build_system": "npm",
+      "package_manager": "npm",
+      "node_version_required": ">=18.0.0",
+      "npm_version_required": ">=9.0.0",
+      "evidence": "package.json lines 68-71"
+    }
+  },
+
+  "prompt_2_architecture_and_components": {
+    "architecture": {
+      "pattern": "Hybrid Multi-Agent Microservices with Event-Driven Architecture",
+      "justification": "The system combines monolithic Node.js backend with distributed n8n workflow orchestration, WhatsApp API integration, and Supabase PostgreSQL. Multiple independent services (check-in, reminders, QR) communicate via API endpoints and message queues (Bull/Redis). The n8n workflows act as autonomous agents for automation tasks. Evidence: docker-compose.yml shows separate services (api, n8n, redis, postgres); index.js shows Express API routing; n8n-workflows/ contains independent workflow definitions.",
+      "components": [
+        {
+          "name": "Express API Server",
+          "type": "backend",
+          "location": "/",
+          "primary_file": "index.js",
+          "language": "JavaScript",
+          "framework": "Express.js 4.18.2",
+          "purpose": "Main HTTP API server handling check-ins, QR generation, reminders, and webhooks",
+          "entry_point": "index.js line 114 - app.listen()",
+          "dependencies_internal": ["utils/logger", "utils/error-handler", "monitoring/health", "services/*", "routes/api/*"],
+          "dependencies_external": ["Supabase PostgreSQL", "WhatsApp Business API", "Redis", "n8n webhooks"],
+          "state_management": "stateless (state in database)",
+          "estimated_lines_of_code": 175,
+          "evidence": "index.js"
+        },
+        {
+          "name": "WhatsApp Client Module",
+          "type": "service",
+          "location": "whatsapp/client/",
+          "primary_file": "sender.js",
+          "language": "JavaScript",
+          "framework": "Axios + Bull Queue",
+          "purpose": "Manages outbound WhatsApp messages with rate limiting, business hours enforcement, and retry logic",
+          "entry_point": "sender.js - sendTemplate(), sendText() functions",
+          "dependencies_internal": ["utils/logger", "config/whatsapp.config"],
+          "dependencies_external": ["WhatsApp Business Cloud API", "Redis (Bull queue)"],
+          "state_management": "stateful (queue state in Redis)",
+          "estimated_lines_of_code": 400,
+          "evidence": "whatsapp/client/sender.js, webhook.js, templates.js, logger.js"
+        },
+        {
+          "name": "Reminder Service",
+          "type": "agent",
+          "location": "services/",
+          "primary_file": "reminder-service.js",
+          "language": "JavaScript",
+          "framework": "node-cron",
+          "purpose": "Autonomous cron-based agent that sends scheduled class and payment reminders via WhatsApp",
+          "entry_point": "reminder-service.js - initializeCronJobs() called from index.js line 141",
+          "dependencies_internal": ["utils/logger", "whatsapp/client/sender"],
+          "dependencies_external": ["Supabase", "WhatsApp API"],
+          "state_management": "stateless (queries database on schedule)",
+          "estimated_lines_of_code": 350,
+          "evidence": "services/reminder-service.js"
+        },
+        {
+          "name": "QR Service",
+          "type": "service",
+          "location": "services/",
+          "primary_file": "qr-service.js",
+          "language": "JavaScript",
+          "framework": "qrcode library",
+          "purpose": "Generates personalized QR codes for member check-ins",
+          "entry_point": "qr-service.js - generateQR() function",
+          "dependencies_internal": ["utils/logger"],
+          "dependencies_external": ["Supabase"],
+          "state_management": "stateless",
+          "estimated_lines_of_code": 200,
+          "evidence": "services/qr-service.js"
+        },
+        {
+          "name": "n8n Workflow Orchestrator",
+          "type": "agent",
+          "location": "n8n-workflows/",
+          "primary_file": "docker-compose.yml service definition",
+          "language": "JSON workflows",
+          "framework": "n8n OSS",
+          "purpose": "Workflow automation agent handling complex multi-step processes (check-in flow, collection flow, contextual messaging)",
+          "entry_point": "n8n service on port 5678",
+          "dependencies_internal": ["GIM_AI API webhooks"],
+          "dependencies_external": ["PostgreSQL", "Redis", "WhatsApp API via GIM_AI backend"],
+          "state_management": "stateful (workflow state in PostgreSQL)",
+          "estimated_lines_of_code": "~600 (JSON workflow definitions)",
+          "evidence": "docker-compose.yml lines 42-72, n8n-workflows/*.json"
+        },
+        {
+          "name": "Authentication System",
+          "type": "module",
+          "location": "security/authentication/",
+          "primary_file": "auth-system.js",
+          "language": "JavaScript",
+          "framework": "jsonwebtoken + bcryptjs",
+          "purpose": "JWT-based authentication with password hashing, rate limiting, and account lockout",
+          "entry_point": "auth-system.js - authenticateUser(), generateToken()",
+          "dependencies_internal": ["utils/logger", "utils/error-handler"],
+          "dependencies_external": ["Supabase (user storage)"],
+          "state_management": "stateless (JWT tokens)",
+          "estimated_lines_of_code": 450,
+          "evidence": "security/authentication/auth-system.js"
+        },
+        {
+          "name": "Error Handler",
+          "type": "module",
+          "location": "utils/",
+          "primary_file": "error-handler.js",
+          "language": "JavaScript",
+          "framework": "Custom",
+          "purpose": "Centralized error handling with retry logic, circuit breaker pattern, and error aggregation",
+          "entry_point": "error-handler.js - handleError(), errorMiddleware()",
+          "dependencies_internal": ["utils/logger"],
+          "dependencies_external": [],
+          "state_management": "stateful (circuit breaker state)",
+          "estimated_lines_of_code": 419,
+          "evidence": "utils/error-handler.js"
+        },
+        {
+          "name": "Logger",
+          "type": "module",
+          "location": "utils/",
+          "primary_file": "logger.js",
+          "language": "JavaScript",
+          "framework": "winston + winston-daily-rotate-file",
+          "purpose": "Structured logging with daily rotation, correlation IDs, and multiple log levels",
+          "entry_point": "logger.js - createLogger()",
+          "dependencies_internal": [],
+          "dependencies_external": [],
+          "state_management": "stateless",
+          "estimated_lines_of_code": 250,
+          "evidence": "utils/logger.js"
+        },
+        {
+          "name": "Health Monitoring",
+          "type": "module",
+          "location": "monitoring/health/",
+          "primary_file": "system-health.js",
+          "language": "JavaScript",
+          "framework": "Custom",
+          "purpose": "System health checks for database, Redis, external APIs",
+          "entry_point": "system-health.js - healthEndpoint()",
+          "dependencies_internal": ["utils/logger"],
+          "dependencies_external": ["Supabase", "Redis", "WhatsApp API"],
+          "state_management": "stateless",
+          "estimated_lines_of_code": 200,
+          "evidence": "monitoring/health/system-health.js"
+        },
+        {
+          "name": "PostgreSQL Database",
+          "type": "database",
+          "location": "database/",
+          "primary_file": "schemas/initial_schema.sql",
+          "language": "SQL",
+          "framework": "PostgreSQL 15 (Supabase)",
+          "purpose": "Primary data store with 11 tables for members, classes, payments, check-ins, etc.",
+          "entry_point": "Supabase connection via @supabase/supabase-js",
+          "dependencies_internal": [],
+          "dependencies_external": [],
+          "state_management": "stateful (persistent storage)",
+          "estimated_lines_of_code": 800,
+          "evidence": "database/schemas/*.sql"
+        },
+        {
+          "name": "Redis Cache/Queue",
+          "type": "cache",
+          "location": "docker-compose.yml",
+          "primary_file": "docker-compose.yml lines 26-39",
+          "language": "N/A",
+          "framework": "Redis 7",
+          "purpose": "Message queue (Bull) and rate limiting storage",
+          "entry_point": "redis://localhost:6379 or redis://redis:6379 in Docker",
+          "dependencies_internal": [],
+          "dependencies_external": [],
+          "state_management": "stateful (in-memory cache)",
+          "estimated_lines_of_code": 0,
+          "evidence": "docker-compose.yml, whatsapp/client/sender.js line 13"
+        },
+        {
+          "name": "QR Check-in Frontend",
+          "type": "frontend",
+          "location": "frontend/qr-checkin/",
+          "primary_file": "index.html",
+          "language": "HTML/JavaScript",
+          "framework": "Vanilla JS",
+          "purpose": "Landing page for QR code scanning and member check-in",
+          "entry_point": "Served via Express static middleware",
+          "dependencies_internal": ["routes/api/checkin", "routes/api/qr"],
+          "dependencies_external": [],
+          "state_management": "stateless",
+          "estimated_lines_of_code": 300,
+          "evidence": "frontend/qr-checkin/"
+        }
+      ],
+      "communication_patterns": [
+        {
+          "from": "Express API",
+          "to": "Supabase PostgreSQL",
+          "type": "REST API / Client Library",
+          "protocol": "HTTPS",
+          "evidence": "services/reminder-service.js line 15-18 - createClient()"
+        },
+        {
+          "from": "Express API",
+          "to": "WhatsApp Business API",
+          "type": "REST API",
+          "protocol": "HTTPS",
+          "evidence": "whatsapp/client/sender.js line 76-80 - axios.post()"
+        },
+        {
+          "from": "WhatsApp Client",
+          "to": "Redis Queue",
+          "type": "Queue (Bull)",
+          "protocol": "Redis Protocol",
+          "evidence": "whatsapp/client/sender.js line 13"
+        },
+        {
+          "from": "n8n",
+          "to": "Express API",
+          "type": "REST API / Webhooks",
+          "protocol": "HTTP",
+          "evidence": "index.js line 69-80 - webhook endpoint, docker-compose.yml line 52"
+        },
+        {
+          "from": "Reminder Service",
+          "to": "WhatsApp Client",
+          "type": "Function call",
+          "protocol": "In-process",
+          "evidence": "services/reminder-service.js line 91-95 - whatsappSender.sendTemplate()"
+        },
+        {
+          "from": "Frontend",
+          "to": "Express API",
+          "type": "REST API",
+          "protocol": "HTTP/HTTPS",
+          "evidence": "index.js lines 61-63 - API routes"
+        },
+        {
+          "from": "Cron Jobs",
+          "to": "Reminder Service",
+          "type": "Event (Scheduled trigger)",
+          "protocol": "In-process",
+          "evidence": "index.js line 141 - initializeCronJobs()"
+        }
+      ]
+    }
+  },
+
+  "prompt_3_ai_agents_and_configuration": {
+    "agents": [
+      {
+        "name": "Automated Reminder Agent",
+        "location": "services/reminder-service.js",
+        "role": "Sends scheduled reminders for classes (24h, 2h before) and payment collection (D0, D3, D7, D14)",
+        "llm_provider": "None",
+        "llm_model": "N/A - Rule-based automation, not LLM-driven",
+        "system_prompt": "N/A",
+        "system_prompt_location": "N/A",
+        "tools": [
+          {
+            "name": "WhatsApp Sender",
+            "function": "whatsappSender.sendTemplate()",
+            "permissions": ["WhatsApp API access", "Database read"],
+            "file_location": "whatsapp/client/sender.js",
+            "validation_present": true
+          },
+          {
+            "name": "Supabase Query",
+            "function": "supabase.from().select()",
+            "permissions": ["Database read"],
+            "file_location": "services/reminder-service.js lines 35-46",
+            "validation_present": true
+          }
+        ],
+        "constraints": {
+          "max_iterations": "Continuous (cron-based)",
+          "max_iterations_location": "services/reminder-service.js - cron schedules",
+          "timeout_seconds": null,
+          "timeout_location": null,
+          "cost_limit": "Implicit via WHATSAPP_MAX_MESSAGES_PER_DAY=2",
+          "cost_limit_location": ".env.example line 28"
+        },
+        "safety_measures": [
+          {
+            "type": "rate_limiting",
+            "implementation": "2 messages per day per user via RateLimiterRedis",
+            "location": "whatsapp/client/sender.js lines 16-22"
+          },
+          {
+            "type": "business_hours_enforcement",
+            "implementation": "Messages only sent 9-21h, queued outside hours",
+            "location": "whatsapp/client/sender.js lines 27-34, 56-61"
+          },
+          {
+            "type": "opt-in_validation",
+            "implementation": "Checks member.consentimiento_wa before sending",
+            "location": "services/reminder-service.js line 81"
+          }
+        ],
+        "memory_management": {
+          "type": "none",
+          "implementation": "Stateless - queries database on each cron execution",
+          "location": "services/reminder-service.js"
+        }
+      },
+      {
+        "name": "n8n Workflow Agent",
+        "location": "n8n-workflows/",
+        "role": "Orchestrates complex multi-step business processes: check-in flow, contextual payment collection, automated class management",
+        "llm_provider": "Google Gemini API",
+        "llm_model": "gemini-pro (free tier)",
+        "system_prompt": "N/A - Workflows are JSON-based, may call Gemini API for specific tasks",
+        "system_prompt_location": "Not in repository - configured within n8n UI",
+        "tools": [
+          {
+            "name": "HTTP Request (Webhooks)",
+            "function": "Call GIM_AI API endpoints",
+            "permissions": ["HTTP requests"],
+            "file_location": "n8n-workflows/core/checkin-flow.json",
+            "validation_present": false
+          },
+          {
+            "name": "Database Query",
+            "function": "Direct PostgreSQL queries via n8n PostgreSQL node",
+            "permissions": ["Database read/write"],
+            "file_location": "docker-compose.yml lines 54-59",
+            "validation_present": false
+          },
+          {
+            "name": "WhatsApp Integration",
+            "function": "Send messages via GIM_AI API",
+            "permissions": ["API calls"],
+            "file_location": "n8n-workflows/messaging/contextual-collection.json",
+            "validation_present": false
+          }
+        ],
+        "constraints": {
+          "max_iterations": "Per workflow definition",
+          "max_iterations_location": "n8n-workflows/*.json",
+          "timeout_seconds": null,
+          "timeout_location": null,
+          "cost_limit": "Gemini API free tier limits (60 req/min)",
+          "cost_limit_location": ".env.example line 65"
+        },
+        "safety_measures": [
+          {
+            "type": "basic_auth",
+            "implementation": "n8n protected with basic authentication",
+            "location": "docker-compose.yml lines 46-48"
+          }
+        ],
+        "memory_management": {
+          "type": "episodic",
+          "implementation": "Workflow execution state stored in PostgreSQL",
+          "location": "docker-compose.yml lines 54-59"
+        }
+      }
+    ],
+    "rag_system": {
+      "present": false,
+      "vector_database": null,
+      "embedding_model": null,
+      "retrieval_strategy": null,
+      "location": null,
+      "note": "System uses direct database queries, not vector-based RAG. Gemini API may be used for text generation but no embedding/retrieval system implemented."
+    }
+  },
+
+  "prompt_4_dependencies_and_stack": {
+    "dependencies": {
+      "production": [
+        {
+          "name": "@supabase/supabase-js",
+          "version": "^2.38.4",
+          "purpose": "PostgreSQL database client for Supabase backend",
+          "criticality": "critical"
+        },
+        {
+          "name": "axios",
+          "version": "^1.6.2",
+          "purpose": "HTTP client for WhatsApp API and external service calls",
+          "criticality": "critical"
+        },
+        {
+          "name": "express",
+          "version": "^4.18.2",
+          "purpose": "Web framework for API server",
+          "criticality": "critical"
+        },
+        {
+          "name": "bull",
+          "version": "^4.12.0",
+          "purpose": "Redis-based queue for WhatsApp message processing",
+          "criticality": "high"
+        },
+        {
+          "name": "redis",
+          "version": "^4.6.11",
+          "purpose": "Redis client for queue and rate limiting",
+          "criticality": "high"
+        },
+        {
+          "name": "node-cron",
+          "version": "^3.0.3",
+          "purpose": "Cron job scheduler for automated reminders",
+          "criticality": "high"
+        },
+        {
+          "name": "winston",
+          "version": "^3.11.0",
+          "purpose": "Structured logging framework",
+          "criticality": "high"
+        },
+        {
+          "name": "jsonwebtoken",
+          "version": "^9.0.2",
+          "purpose": "JWT authentication token generation/verification",
+          "criticality": "high"
+        },
+        {
+          "name": "bcryptjs",
+          "version": "^2.4.3",
+          "purpose": "Password hashing for authentication",
+          "criticality": "high"
+        },
+        {
+          "name": "helmet",
+          "version": "^7.1.0",
+          "purpose": "Security headers middleware for Express",
+          "criticality": "high"
+        },
+        {
+          "name": "rate-limiter-flexible",
+          "version": "^3.0.4",
+          "purpose": "Rate limiting for WhatsApp messages and API endpoints",
+          "criticality": "high"
+        },
+        {
+          "name": "qrcode",
+          "version": "^1.5.3",
+          "purpose": "QR code generation for member check-ins",
+          "criticality": "medium"
+        },
+        {
+          "name": "joi",
+          "version": "^17.11.0",
+          "purpose": "Input validation schema",
+          "criticality": "high"
+        },
+        {
+          "name": "dotenv",
+          "version": "^16.3.1",
+          "purpose": "Environment variable management",
+          "criticality": "critical"
+        },
+        {
+          "name": "cors",
+          "version": "^2.8.5",
+          "purpose": "CORS middleware",
+          "criticality": "medium"
+        },
+        {
+          "name": "googleapis",
+          "version": "^128.0.0",
+          "purpose": "Google Sheets API for legacy data migration",
+          "criticality": "low"
+        },
+        {
+          "name": "moment-timezone",
+          "version": "^0.5.43",
+          "purpose": "Timezone handling (America/Argentina/Buenos_Aires)",
+          "criticality": "medium"
+        },
+        {
+          "name": "uuid",
+          "version": "^13.0.0",
+          "purpose": "UUID generation for database IDs",
+          "criticality": "medium"
+        },
+        {
+          "name": "validator",
+          "version": "^13.11.0",
+          "purpose": "String validation (email, phone, etc.)",
+          "criticality": "medium"
+        },
+        {
+          "name": "whatsapp-web.js",
+          "version": "^1.23.0",
+          "purpose": "WhatsApp client library (may be unused in favor of Cloud API)",
+          "criticality": "low"
+        },
+        {
+          "name": "winston-daily-rotate-file",
+          "version": "^4.7.1",
+          "purpose": "Log file rotation",
+          "criticality": "medium"
+        }
+      ],
+      "development": [
+        {
+          "name": "jest",
+          "version": "^29.7.0",
+          "purpose": "Testing framework"
+        },
+        {
+          "name": "@playwright/test",
+          "version": "^1.40.1",
+          "purpose": "E2E testing"
+        },
+        {
+          "name": "artillery",
+          "version": "^2.0.3",
+          "purpose": "Performance/load testing"
+        },
+        {
+          "name": "eslint",
+          "version": "^8.54.0",
+          "purpose": "JavaScript linting"
+        },
+        {
+          "name": "prettier",
+          "version": "^3.1.0",
+          "purpose": "Code formatting"
+        },
+        {
+          "name": "nodemon",
+          "version": "^3.0.2",
+          "purpose": "Development server with hot reload"
+        },
+        {
+          "name": "supertest",
+          "version": "^6.3.3",
+          "purpose": "HTTP assertions for testing"
+        },
+        {
+          "name": "eslint-config-prettier",
+          "version": "^9.0.0",
+          "purpose": "ESLint/Prettier integration"
+        },
+        {
+          "name": "@types/jest",
+          "version": "^29.5.8",
+          "purpose": "Jest type definitions"
+        }
+      ],
+      "system_dependencies": [
+        {
+          "name": "PostgreSQL",
+          "version": "15",
+          "purpose": "Primary database",
+          "evidence": "docker-compose.yml line 6"
+        },
+        {
+          "name": "Redis",
+          "version": "7",
+          "purpose": "Cache and message queue",
+          "evidence": "docker-compose.yml line 27"
+        },
+        {
+          "name": "Node.js",
+          "version": ">=18.0.0",
+          "purpose": "Runtime environment",
+          "evidence": "package.json line 69, Dockerfile line 1"
+        },
+        {
+          "name": "Docker",
+          "version": "compatible with compose v3.8",
+          "purpose": "Containerization",
+          "evidence": "docker-compose.yml line 1"
+        },
+        {
+          "name": "n8n",
+          "version": "latest",
+          "purpose": "Workflow automation",
+          "evidence": "docker-compose.yml line 43"
+        }
+      ]
+    },
+    "frameworks_and_libraries": {
+      "web_framework": "Express.js 4.18.2",
+      "ai_frameworks": ["Google Gemini API (direct API calls, no framework)"],
+      "database_orm": "@supabase/supabase-js (client library, not traditional ORM)",
+      "testing_framework": "Jest 29.7.0 + Playwright 1.40.1",
+      "async_framework": "Bull (Redis queue) + node-cron",
+      "logging_framework": "Winston 3.11.0",
+      "validation_framework": "Joi 17.11.0"
+    },
+    "infrastructure": {
+      "containerization": "Docker",
+      "orchestration": "Docker Compose",
+      "ci_cd": "Not configured (no .github/workflows/ files present)",
+      "evidence_files": ["docker-compose.yml", "Dockerfile"]
+    }
+  },
+
+  "prompt_5_contracts_and_apis": {
+    "interfaces": [
+      {
+        "type": "REST API",
+        "endpoint_or_topic": "/health",
+        "method": "GET",
+        "location": "index.js line 66",
+        "input_schema": {
+          "description": "No parameters required",
+          "parameters": [],
+          "schema_location": "monitoring/health/system-health.js"
+        },
+        "output_schema": {
+          "description": "System health status with checks for database, Redis, external services",
+          "schema_location": "monitoring/health/system-health.js"
+        },
+        "authentication": {
+          "required": false,
+          "method": "none",
+          "location": null
+        },
+        "rate_limiting": {
+          "present": false,
+          "limits": null,
+          "location": null
+        },
+        "error_handling": {
+          "status_codes": ["200", "500"],
+          "error_format": "JSON with error message",
+          "location": "monitoring/health/system-health.js"
+        }
+      },
+      {
+        "type": "REST API",
+        "endpoint_or_topic": "/",
+        "method": "GET",
+        "location": "index.js lines 45-58",
+        "input_schema": {
+          "description": "No parameters",
+          "parameters": [],
+          "schema_location": null
+        },
+        "output_schema": {
+          "description": "API metadata with available endpoints",
+          "schema_location": "index.js lines 46-57"
+        },
+        "authentication": {
+          "required": false,
+          "method": "none",
+          "location": null
+        },
+        "rate_limiting": {
+          "present": false,
+          "limits": null,
+          "location": null
+        },
+        "error_handling": {
+          "status_codes": ["200"],
+          "error_format": "N/A",
+          "location": null
+        }
+      },
+      {
+        "type": "REST API (Webhook)",
+        "endpoint_or_topic": "/webhook/whatsapp",
+        "method": "POST",
+        "location": "index.js lines 69-80",
+        "input_schema": {
+          "description": "WhatsApp webhook payload from Meta",
+          "parameters": [
+            {
+              "name": "body",
+              "type": "object",
+              "required": true,
+              "validation": "Expected to contain WhatsApp message events"
+            }
+          ],
+          "schema_location": "WhatsApp Cloud API documentation"
+        },
+        "output_schema": {
+          "description": "200 status code",
+          "schema_location": "index.js line 75"
+        },
+        "authentication": {
+          "required": true,
+          "method": "Webhook signature verification (planned)",
+          "location": "whatsapp/client/webhook.js"
+        },
+        "rate_limiting": {
+          "present": false,
+          "limits": "Implicitly limited by WhatsApp API",
+          "location": null
+        },
+        "error_handling": {
+          "status_codes": ["200", "500"],
+          "error_format": "Status code only",
+          "location": "index.js lines 76-78"
+        }
+      },
+      {
+        "type": "REST API (Webhook Verification)",
+        "endpoint_or_topic": "/webhook/whatsapp",
+        "method": "GET",
+        "location": "index.js lines 83-98",
+        "input_schema": {
+          "description": "WhatsApp webhook verification",
+          "parameters": [
+            {
+              "name": "hub.mode",
+              "type": "string",
+              "required": true,
+              "validation": "Expected value: 'subscribe'"
+            },
+            {
+              "name": "hub.verify_token",
+              "type": "string",
+              "required": true,
+              "validation": "Must match WHATSAPP_WEBHOOK_VERIFY_TOKEN"
+            },
+            {
+              "name": "hub.challenge",
+              "type": "string",
+              "required": true,
+              "validation": "Challenge string to echo back"
+            }
+          ],
+          "schema_location": "WhatsApp Cloud API webhook setup documentation"
+        },
+        "output_schema": {
+          "description": "Challenge string or 403",
+          "schema_location": "index.js lines 88-96"
+        },
+        "authentication": {
+          "required": true,
+          "method": "Verify token comparison",
+          "location": "index.js line 88"
+        },
+        "rate_limiting": {
+          "present": false,
+          "limits": null,
+          "location": null
+        },
+        "error_handling": {
+          "status_codes": ["200", "403"],
+          "error_format": "Status code only",
+          "location": "index.js line 96"
+        }
+      },
+      {
+        "type": "REST API",
+        "endpoint_or_topic": "/api/checkin",
+        "method": "Multiple",
+        "location": "routes/api/checkin.js",
+        "input_schema": {
+          "description": "Check-in endpoints for member attendance",
+          "parameters": [],
+          "schema_location": "routes/api/checkin.js"
+        },
+        "output_schema": {
+          "description": "Check-in confirmation",
+          "schema_location": "routes/api/checkin.js"
+        },
+        "authentication": {
+          "required": "uncertain",
+          "method": "uncertain",
+          "location": "routes/api/checkin.js"
+        },
+        "rate_limiting": {
+          "present": "uncertain",
+          "limits": "uncertain",
+          "location": "uncertain"
+        },
+        "error_handling": {
+          "status_codes": ["uncertain"],
+          "error_format": "uncertain",
+          "location": "routes/api/checkin.js"
+        }
+      },
+      {
+        "type": "REST API",
+        "endpoint_or_topic": "/api/qr",
+        "method": "Multiple",
+        "location": "routes/api/qr.js",
+        "input_schema": {
+          "description": "QR code generation endpoints",
+          "parameters": [],
+          "schema_location": "routes/api/qr.js"
+        },
+        "output_schema": {
+          "description": "QR code image or data",
+          "schema_location": "routes/api/qr.js"
+        },
+        "authentication": {
+          "required": "uncertain",
+          "method": "uncertain",
+          "location": "routes/api/qr.js"
+        },
+        "rate_limiting": {
+          "present": "uncertain",
+          "limits": "uncertain",
+          "location": "uncertain"
+        },
+        "error_handling": {
+          "status_codes": ["uncertain"],
+          "error_format": "uncertain",
+          "location": "routes/api/qr.js"
+        }
+      },
+      {
+        "type": "REST API",
+        "endpoint_or_topic": "/api/reminders",
+        "method": "Multiple",
+        "location": "routes/api/reminders.js",
+        "input_schema": {
+          "description": "Manual reminder trigger endpoints",
+          "parameters": [],
+          "schema_location": "routes/api/reminders.js"
+        },
+        "output_schema": {
+          "description": "Reminder execution status",
+          "schema_location": "routes/api/reminders.js"
+        },
+        "authentication": {
+          "required": "uncertain",
+          "method": "uncertain",
+          "location": "routes/api/reminders.js"
+        },
+        "rate_limiting": {
+          "present": "uncertain",
+          "limits": "uncertain",
+          "location": "uncertain"
+        },
+        "error_handling": {
+          "status_codes": ["uncertain"],
+          "error_format": "uncertain",
+          "location": "routes/api/reminders.js"
+        }
+      }
+    ],
+    "internal_contracts": [
+      {
+        "from": "reminder-service",
+        "to": "whatsapp/client/sender",
+        "function_or_method": "sendTemplate(to, templateName, params, options)",
+        "parameters": "phone number, template name, template parameters, options object",
+        "return_type": "Promise",
+        "location": "services/reminder-service.js line 91-95, whatsapp/client/sender.js line 39"
+      },
+      {
+        "from": "any module",
+        "to": "utils/logger",
+        "function_or_method": "createLogger(moduleName)",
+        "parameters": "module name string",
+        "return_type": "Logger instance with info(), warn(), error(), critical() methods",
+        "location": "utils/logger.js"
+      },
+      {
+        "from": "any module",
+        "to": "utils/error-handler",
+        "function_or_method": "handleError(error, context)",
+        "parameters": "error object, context object",
+        "return_type": "Promise<void>",
+        "location": "utils/error-handler.js"
+      }
+    ],
+    "note": "Detailed route handlers in routes/api/* files require deeper inspection to extract complete schemas. Authentication middleware usage not evident in main index.js file."
+  }
+}
