@@ -5,8 +5,6 @@
 
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
 const path = require('path');
 
 // Import centralized logger and error handler
@@ -14,23 +12,32 @@ const { createLogger } = require('./utils/logger');
 const { errorMiddleware } = require('./utils/error-handler');
 const { healthEndpoint } = require('./monitoring/health/system-health');
 const { initializeCronJobs } = require('./services/reminder-service');
+
+// PROMPT 19: Import security middleware
+const { applySecurityMiddleware } = require('./security/security-middleware');
+const { apiRateLimiter } = require('./security/rate-limiter');
+
 const logger = createLogger('app');
 
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(helmet()); // Security headers
-app.use(cors()); // CORS
-app.use(express.json()); // JSON body parser
-app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
+// PROMPT 19: Apply security middleware (Helmet + CORS)
+applySecurityMiddleware(app);
+
+// JSON body parser with size limit
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Add correlation ID middleware
 app.use((req, res, next) => {
   req.correlationId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   next();
 });
+
+// PROMPT 19: Apply global API rate limiter
+app.use('/api', apiRateLimiter);
 
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'frontend')));
@@ -40,6 +47,13 @@ app.use('/frontend', express.static(path.join(__dirname, 'frontend')));
 const checkinRoutes = require('./routes/api/checkin');
 const qrRoutes = require('./routes/api/qr');
 const remindersRoutes = require('./routes/api/reminders');
+const collectionRoutes = require('./routes/api/collection');
+const surveysRoutes = require('./routes/api/surveys');
+const replacementsRoutes = require('./routes/api/replacements');
+const instructorPanelRoutes = require('./routes/api/instructor-panel');
+const dashboardRoutes = require('./routes/api/dashboard');
+// PROMPT 19: Authentication routes
+const authRoutes = require('./routes/api/auth');
 
 // Basic routes
 app.get('/', (req, res) => {
@@ -58,9 +72,16 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+// PROMPT 19: Auth routes (no rate limit aquí, ya tiene su propio loginRateLimiter)
+app.use('/api/auth', authRoutes);
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/reminders', remindersRoutes);
+app.use('/api/collection', collectionRoutes);
+app.use('/api/surveys', surveysRoutes);
+app.use('/api/replacements', replacementsRoutes);
+app.use('/api/instructor-panel', instructorPanelRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
@@ -152,6 +173,47 @@ Available endpoints:
     logger.info('Automated reminder system initialized');
   } catch (error) {
     logger.error('Failed to initialize reminder system', { error: error.message });
+  }
+  
+  // Initialize collection queue processor
+  try {
+    require('./workers/collection-queue-processor');
+    logger.info('Collection queue processor initialized');
+  } catch (error) {
+    logger.error('Failed to initialize collection queue processor', { error: error.message });
+  }
+  
+  // Initialize survey queue processor
+  try {
+    require('./workers/survey-queue-processor');
+    logger.info('Survey queue processor initialized');
+  } catch (error) {
+    logger.error('Failed to initialize survey queue processor', { error: error.message });
+  }
+  
+  // Initialize replacement queue processor
+  try {
+    require('./workers/replacement-queue-processor');
+    logger.info('Replacement queue processor initialized');
+  } catch (error) {
+    logger.error('Failed to initialize replacement queue processor', { error: error.message });
+  }
+
+  // Initialize instructor panel alert queue processor
+  try {
+    require('./workers/instructor-alert-queue-processor');
+    logger.info('Instructor panel alert queue processor initialized');
+  } catch (error) {
+    logger.error('Failed to initialize instructor alert queue processor', { error: error.message });
+  }
+
+  // Initialize dashboard cron jobs (PROMPT 15)
+  try {
+    const { initializeDashboardCron } = require('./workers/dashboard-cron-processor');
+    initializeDashboardCron();
+    logger.info('Dashboard cron jobs initialized (snapshots, alerts, view refresh)');
+  } catch (error) {
+    logger.error('Failed to initialize dashboard cron jobs', { error: error.message });
   }
   });
 }
