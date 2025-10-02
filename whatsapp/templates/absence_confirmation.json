@@ -1,0 +1,33 @@
+{
+  "name": "absence_confirmation",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Entendido {{1}}! 📝\n\nHemos registrado tu ausencia:\n\n📅 Fecha: *{{2}}*\n🕐 Hora: *{{3}}*\n📚 Clase: *{{4}}*\n👥 Estudiantes: {{5}}\n\nEstamos buscando un reemplazo. Te notificaremos cuando encontremos uno.\n\n💡 Mientras más rápido avisas, mayor bonificación para el reemplazo."
+    }
+  ],
+  "variables": [
+    {
+      "name": "instructor_name",
+      "example": "Carlos"
+    },
+    {
+      "name": "date",
+      "example": "Lunes 15/03"
+    },
+    {
+      "name": "time",
+      "example": "18:00"
+    },
+    {
+      "name": "class_type",
+      "example": "Spinning"
+    },
+    {
+      "name": "students_count",
+      "example": "12"
+    }
+  ]
+}

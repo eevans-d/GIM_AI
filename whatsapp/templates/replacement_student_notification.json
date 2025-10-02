@@ -1,0 +1,37 @@
+{
+  "name": "replacement_student_notification",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}! 👋\n\nTe informamos que hubo un cambio de instructor para tu clase de *{{2}}* del *{{3}}* a las *{{4}}*.\n\n👤 Instructor original: {{5}}\n👤 Instructor reemplazo: *{{6}}*\n\nLa clase se realizará con normalidad en el mismo horario y lugar.\n\n¡Nos vemos! 💪"
+    }
+  ],
+  "variables": [
+    {
+      "name": "member_name",
+      "example": "Juan"
+    },
+    {
+      "name": "class_type",
+      "example": "Spinning"
+    },
+    {
+      "name": "date",
+      "example": "Lunes 15/03"
+    },
+    {
+      "name": "time",
+      "example": "18:00"
+    },
+    {
+      "name": "original_instructor",
+      "example": "Carlos García"
+    },
+    {
+      "name": "replacement_instructor",
+      "example": "María López"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "class_started_confirmation",
+  "language": "es",
+  "category": "ACCOUNT_UPDATE",
+  "description": "Confirmación al instructor de inicio de clase desde panel móvil",
+  "structure": {
+    "header": {
+      "type": "text",
+      "text": "✅ Clase Iniciada"
+    },
+    "body": {
+      "type": "text",
+      "text": "Hola {{1}},\n\n¡Tu clase *{{2}}* ha sido iniciada exitosamente!\n\n📋 *Resumen:*\n• Estudiantes esperados: {{3}}\n• Ya registrados: {{4}}\n• Hora de inicio: {{5}}\n\n💡 Puedes seguir marcando asistencia desde tu panel móvil durante toda la clase.\n\n¡Que tengas una excelente sesión! 💪",
+      "variables": {
+        "1": "instructor_name",
+        "2": "class_name",
+        "3": "expected_students",
+        "4": "checked_in_students",
+        "5": "start_time"
+      }
+    }
+  },
+  "example": {
+    "header_text": ["✅ Clase Iniciada"],
+    "body_text": [
+      ["Carlos Ruiz", "Spinning Avanzado", "20", "15", "18:05"]
+    ]
+  }
+}

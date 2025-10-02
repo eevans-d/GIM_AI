@@ -1,0 +1,41 @@
+{
+  "name": "low_attendance_alert",
+  "language": "es",
+  "category": "ALERT_UPDATE",
+  "description": "Alerta a administración sobre asistencia baja en clase activa",
+  "structure": {
+    "header": {
+      "type": "text",
+      "text": "⚠️ Alerta de Asistencia Baja"
+    },
+    "body": {
+      "type": "text",
+      "text": "Hola {{1}},\n\nLa clase *{{2}}* con el instructor {{3}} tiene asistencia baja:\n\n📊 *Asistencia Actual:*\n• Esperados: {{4}} estudiantes\n• Presentes: {{5}} estudiantes\n• Tasa: {{6}}%\n\n🕐 Hora de clase: {{7}}\n\n¿Necesitas tomar alguna acción?",
+      "variables": {
+        "1": "admin_name",
+        "2": "class_name",
+        "3": "instructor_name",
+        "4": "expected_students",
+        "5": "checked_in_students",
+        "6": "attendance_rate",
+        "7": "class_time"
+      }
+    },
+    "buttons": [
+      {
+        "type": "quick_reply",
+        "text": "✅ Revisar"
+      },
+      {
+        "type": "quick_reply",
+        "text": "📞 Llamar instructor"
+      }
+    ]
+  },
+  "example": {
+    "header_text": ["⚠️ Alerta de Asistencia Baja"],
+    "body_text": [
+      ["Juan Pérez", "Spinning Avanzado", "Carlos Ruiz", "20", "8", "40", "18:00"]
+    ]
+  }
+}

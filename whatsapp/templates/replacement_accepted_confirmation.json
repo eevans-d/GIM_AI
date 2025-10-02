@@ -1,0 +1,41 @@
+{
+  "name": "replacement_accepted_confirmation",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "¡Perfecto {{1}}! ✅\n\nHas aceptado cubrir la clase de *{{2}}* el *{{3}}* a las *{{4}}*.\n\n💰 Bonificación confirmada: *${{5}}*\n📍 Ubicación: {{6}}\n👥 {{7}} estudiantes esperándote\n\n¡Nos vemos en la clase! 💪"
+    }
+  ],
+  "variables": [
+    {
+      "name": "instructor_name",
+      "example": "María"
+    },
+    {
+      "name": "class_type",
+      "example": "Spinning"
+    },
+    {
+      "name": "date",
+      "example": "Lunes 15/03"
+    },
+    {
+      "name": "time",
+      "example": "18:00"
+    },
+    {
+      "name": "bonus_amount",
+      "example": "1500"
+    },
+    {
+      "name": "location",
+      "example": "Sala 2"
+    },
+    {
+      "name": "enrolled_students",
+      "example": "12"
+    }
+  ]
+}

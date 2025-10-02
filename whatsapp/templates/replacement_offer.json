@@ -1,0 +1,63 @@
+{
+  "name": "replacement_offer",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "🔔 Oportunidad de Reemplazo"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}! 👋\n\n*{{2}}* no puede dar su clase de *{{3}}* el *{{4}}* a las *{{5}}*.\n\n¿Podrías cubrirla?\n\n💰 Bonificación: *${{6}}*\n⏰ Debes responder en {{7}} minutos\n👥 {{8}} estudiantes inscritos\n\n¿Aceptas el reemplazo?"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "✅ Sí, acepto"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "❌ No puedo"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "candidate_name",
+      "example": "María"
+    },
+    {
+      "name": "original_instructor_name",
+      "example": "Carlos García"
+    },
+    {
+      "name": "class_type",
+      "example": "Spinning"
+    },
+    {
+      "name": "date",
+      "example": "Lunes 15/03"
+    },
+    {
+      "name": "time",
+      "example": "18:00"
+    },
+    {
+      "name": "bonus_amount",
+      "example": "1500"
+    },
+    {
+      "name": "expiry_minutes",
+      "example": "30"
+    },
+    {
+      "name": "enrolled_students",
+      "example": "12"
+    }
+  ]
+}

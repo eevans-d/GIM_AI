@@ -1,0 +1,41 @@
+{
+  "name": "replacement_original_instructor_notification",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}! ✅\n\nTu clase de *{{2}}* del *{{3}}* a las *{{4}}* fue cubierta exitosamente.\n\n👤 Instructor reemplazo: *{{5}}*\n💰 Bonificación pagada: ${{6}}\n👥 {{7}} estudiantes fueron notificados\n\n¡Gracias por avisar con tiempo! 🙏"
+    }
+  ],
+  "variables": [
+    {
+      "name": "instructor_name",
+      "example": "Carlos"
+    },
+    {
+      "name": "class_type",
+      "example": "Spinning"
+    },
+    {
+      "name": "date",
+      "example": "Lunes 15/03"
+    },
+    {
+      "name": "time",
+      "example": "18:00"
+    },
+    {
+      "name": "replacement_instructor",
+      "example": "María López"
+    },
+    {
+      "name": "bonus_amount",
+      "example": "1500"
+    },
+    {
+      "name": "students_count",
+      "example": "12"
+    }
+  ]
+}

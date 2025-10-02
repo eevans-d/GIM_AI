@@ -1,0 +1,31 @@
+{
+  "name": "checklist_reminder",
+  "language": "es",
+  "category": "ALERT_UPDATE",
+  "description": "Recordatorio al instructor para completar checklist de preparación",
+  "structure": {
+    "header": {
+      "type": "text",
+      "text": "📋 Recordatorio de Checklist"
+    },
+    "body": {
+      "type": "text",
+      "text": "Hola {{1}},\n\nTu clase *{{2}}* comienza en {{3}} minutos.\n\n✅ *Progreso del checklist:*\n{{4}} de {{5}} items completados ({{6}}%)\n\n💡 No olvides revisar:\n{{7}}\n\nAccede a tu panel móvil para completar la preparación.",
+      "variables": {
+        "1": "instructor_name",
+        "2": "class_name",
+        "3": "minutes_until_start",
+        "4": "completed_items",
+        "5": "total_items",
+        "6": "completion_percentage",
+        "7": "pending_items_list"
+      }
+    }
+  },
+  "example": {
+    "header_text": ["📋 Recordatorio de Checklist"],
+    "body_text": [
+      ["Carlos Ruiz", "Spinning Avanzado", "15", "3", "5", "60", "• Ajustar sistema de audio\n• Verificar ventilación"]
+    ]
+  }
+}

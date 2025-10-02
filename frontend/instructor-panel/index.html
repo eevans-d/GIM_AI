@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Mi Clase Ahora - Panel de Instructor</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .header .class-info {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card.success .value { color: var(--success-color); }
+        .stat-card.warning .value { color: var(--warning-color); }
+        .stat-card.danger .value { color: var(--danger-color); }
+
+        /* Alerts */
+        .alerts-section {
+            padding: 0 1rem 1rem;
+        }
+
+        .alert {
+            background: white;
+            border-left: 4px solid var(--warning-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert.critical { border-color: var(--danger-color); }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .alert-message {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* Checklist */
+        .checklist-section {
+            padding: 0 1rem 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-badge {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .checklist-item {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .checklist-item.completed {
+            opacity: 0.6;
+        }
+
+        .checklist-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gray-300);
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checklist-checkbox.completed {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .checklist-checkbox.completed::after {
+            content: '✓';
+            color: white;
+            font-weight: 700;
+        }
+
+        .checklist-content {
+            flex: 1;
+        }
+
+        .checklist-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .checklist-description {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        /* Students List */
+        .students-section {
+            padding: 0 1rem 5rem;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .student-card:active {
+            transform: scale(0.98);
+        }
+
+        .student-card.checked-in {
+            background: #f0fdf4;
+            border: 2px solid var(--success-color);
+        }
+
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .student-status {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        .checkin-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--success-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 50;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        .fab.success {
+            background: var(--success-color);
+        }
+
+        .fab.danger {
+            background: var(--danger-color);
+        }
+
+        /* Loading State */
+        .loading {
+            padding: 2rem;
+            text-align: center;
+            color: var(--gray-600);
+        }
+
+        .spinner {
+            border: 3px solid var(--gray-200);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-600);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Mi Clase Ahora</h1>
+        <div class="class-info" id="classInfo">Cargando...</div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <div class="value" id="checkedInCount">0</div>
+            <div class="label">Check-ins</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="value" id="pendingCount">0</div>
+            <div class="label">Pendientes</div>
+        </div>
+        <div class="stat-card">
+            <div class="value" id="attendanceRate">0%</div>
+            <div class="label">Asistencia</div>
+        </div>
+        <div class="stat-card">
+            <div class="value" id="checklistProgress">0%</div>
+            <div class="label">Preparación</div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="alerts-section" id="alertsSection" style="display: none;">
+        <!-- Alerts will be injected here -->
+    </div>
+
+    <!-- Checklist -->
+    <div class="checklist-section">
+        <div class="section-title">
+            Preparación de Clase
+            <span class="progress-badge" id="checklistBadge">0/0</span>
+        </div>
+        <div id="checklistContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Cargando checklist...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="students-section">
+        <div class="section-title">
+            Estudiantes
+            <span class="progress-badge" id="studentsBadge">0/0</span>
+        </div>
+        <div id="studentsContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>Cargando estudiantes...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button class="fab success" id="startClassBtn" title="Iniciar clase">
+            ▶
+        </button>
+        <button class="fab danger" id="endClassBtn" style="display: none;" title="Finalizar clase">
+            ⏹
+        </button>
+    </div>
+
+    <!-- Modal for Student Actions -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <div class="modal-title" id="studentModalTitle">Estudiante</div>
+            <div class="modal-actions">
+                <button class="btn btn-success" id="checkinBtn">✓ Check-in</button>
+                <button class="btn btn-secondary" id="absentBtn">✗ Ausente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = window.location.origin + '/api/instructor-panel';
+        const SESSION_ID = new URLSearchParams(window.location.search).get('session_id');
+        const INSTRUCTOR_ID = new URLSearchParams(window.location.search).get('instructor_id');
+        const REFRESH_INTERVAL = 10000; // 10 seconds
+
+        let currentSession = null;
+        let selectedStudent = null;
+        let refreshTimer = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!SESSION_ID) {
+                alert('No se especificó una sesión');
+                return;
+            }
+
+            loadSessionData();
+            setupEventListeners();
+            startAutoRefresh();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            document.getElementById('startClassBtn').addEventListener('click', startClass);
+            document.getElementById('endClassBtn').addEventListener('click', endClass);
+            document.getElementById('checkinBtn').addEventListener('click', checkinStudent);
+            document.getElementById('absentBtn').addEventListener('click', markStudentAbsent);
+            document.getElementById('studentModal').addEventListener('click', (e) => {
+                if (e.target.id === 'studentModal') closeModal();
+            });
+        }
+
+        // Load Session Data
+        async function loadSessionData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sessions/${SESSION_ID}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('Error al cargar sesión');
+                }
+
+                currentSession = result.data;
+                renderSession();
+            } catch (error) {
+                console.error('Error loading session:', error);
+                alert('Error al cargar datos de la clase');
+            }
+        }
+
+        // Render Session
+        function renderSession() {
+            if (!currentSession) return;
+
+            // Update header
+            document.getElementById('classInfo').textContent = 
+                `${currentSession.class_name} - ${currentSession.class_type}`;
+
+            // Update stats
+            document.getElementById('checkedInCount').textContent = currentSession.checked_in_students || 0;
+            document.getElementById('pendingCount').textContent = 
+                (currentSession.expected_students || 0) - (currentSession.checked_in_students || 0);
+            document.getElementById('attendanceRate').textContent = 
+                Math.round(currentSession.attendance_rate || 0) + '%';
+            document.getElementById('checklistProgress').textContent = 
+                Math.round(currentSession.checklist_completion_percentage || 0) + '%';
+
+            // Render alerts
+            renderAlerts(currentSession.alerts || []);
+
+            // Render checklist
+            renderChecklist(currentSession.checklist || []);
+
+            // Render students
+            renderStudents(currentSession.students || []);
+
+            // Update buttons
+            if (currentSession.session_status === 'active') {
+                document.getElementById('startClassBtn').style.display = 'none';
+                document.getElementById('endClassBtn').style.display = 'flex';
+            }
+        }
+
+        // Render Alerts
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertsSection');
+            
+            if (alerts.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert ${alert.alert_severity === 'critical' || alert.alert_severity === 'high' ? 'critical' : ''}">
+                    <div class="alert-header">
+                        <div class="alert-title">${getAlertIcon(alert.alert_type)} ${alert.alert_type}</div>
+                    </div>
+                    <div class="alert-message">${alert.alert_message}</div>
+                </div>
+            `).join('');
+        }
+
+        function getAlertIcon(type) {
+            const icons = {
+                low_attendance: '⚠️',
+                late_start: '🚨',
+                equipment_issue: '🔧',
+                emergency: '🆘'
+            };
+            return icons[type] || '📢';
+        }
+
+        // Render Checklist
+        function renderChecklist(checklist) {
+            const container = document.getElementById('checklistContainer');
+            const completed = checklist.filter(item => item.is_completed).length;
+            const total = checklist.length;
+
+            document.getElementById('checklistBadge').textContent = `${completed}/${total}`;
+
+            if (checklist.length === 0) {
+                container.innerHTML = '<div class="empty-state">No hay items de preparación</div>';
+                return;
+            }
+
+            container.innerHTML = checklist.map(item => `
+                <div class="checklist-item ${item.is_completed ? 'completed' : ''}" 
+                     onclick="toggleChecklistItem('${item.id}', ${item.is_completed})">
+                    <div class="checklist-checkbox ${item.is_completed ? 'completed' : ''}"></div>
+                    <div class="checklist-content">
+                        <div class="checklist-title">${item.class_checklists.item_title}</div>
+                        ${item.class_checklists.item_description ? 
+                            `<div class="checklist-description">${item.class_checklists.item_description}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle Checklist Item
+        async function toggleChecklistItem(itemId, isCompleted) {
+            if (isCompleted) return; // Already completed
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/sessions/${SESSION_ID}/checklist/${itemId}/complete`,
+                    {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ instructor_id: INSTRUCTOR_ID })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (result.success) {
+                    loadSessionData(); // Refresh
+                    
+                    if (result.data.checklist_fully_completed) {
+                        alert('¡Checklist completo! Listo para comenzar la clase 💪');
+                    }
+                }
+            } catch (error) {
+                console.error('Error completing checklist item:', error);
+            }
+        }
+
+        // Render Students
+        function renderStudents(students) {
+            const container = document.getElementById('studentsContainer');
+            const checkedIn = students.filter(s => s.checked_in).length;
+            const total = students.length;
+
+            document.getElementById('studentsBadge').textContent = `${checkedIn}/${total}`;
+
+            if (students.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div>No hay estudiantes registrados</div></div>';
+                return;
+            }
+
+            container.innerHTML = students.map(student => `
+                <div class="student-card ${student.checked_in ? 'checked-in' : ''}" 
+                     onclick="openStudentModal('${student.id}', '${student.nombre} ${student.apellido}', ${student.checked_in})">
+                    <div class="student-avatar">${getInitials(student.nombre, student.apellido)}</div>
+                    <div class="student-info">
+                        <div class="student-name">${student.nombre} ${student.apellido}</div>
+                        <div class="student-status">
+                            ${student.checked_in ? 
+                                `✓ Check-in: ${new Date(student.checked_in_at).toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'})}` : 
+                                'Pendiente de check-in'}
+                        </div>
+                    </div>
+                    ${student.checked_in ? '<div class="checkin-icon">✓</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function getInitials(firstName, lastName) {
+            return (firstName[0] + (lastName ? lastName[0] : '')).toUpperCase();
+        }
+
+        // Modal Functions
+        function openStudentModal(memberId, memberName, isCheckedIn) {
+            if (isCheckedIn) return; // No action for already checked-in students
+
+            selectedStudent = { id: memberId, name: memberName };
+            document.getElementById('studentModalTitle').textContent = memberName;
+            document.getElementById('studentModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').classList.remove('active');
+            selectedStudent = null;
+        }
+
+        // Check-in Student
+        async function checkinStudent() {
+            if (!selectedStudent) return;
+
+            try {
+                // quickCheckinStudent - API call to instructor panel service
+                const response = await fetch(
+                    `${API_BASE_URL}/sessions/${SESSION_ID}/checkin`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            member_id: selectedStudent.id,
+                            instructor_id: INSTRUCTOR_ID
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeModal();
+                    loadSessionData(); // Refresh
+                    
+                    // Show success feedback
+                    showToast('✓ Check-in registrado');
+                }
+            } catch (error) {
+                console.error('Error checking in student:', error);
+                alert('Error al registrar check-in');
+            }
+        }
+
+        // Mark Student Absent
+        async function markStudentAbsent() {
+            if (!selectedStudent) return;
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/sessions/${SESSION_ID}/mark-absent`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            member_id: selectedStudent.id,
+                            reason: 'Marcado por instructor'
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeModal();
+                    loadSessionData(); // Refresh
+                    showToast('✓ Ausencia registrada');
+                }
+            } catch (error) {
+                console.error('Error marking absent:', error);
+                alert('Error al marcar ausencia');
+            }
+        }
+
+        // Start Class
+        async function startClass() {
+            if (confirm('¿Iniciar la clase ahora?')) {
+                try {
+                    const response = await fetch(
+                        `${API_BASE_URL}/sessions/start`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                instructor_id: INSTRUCTOR_ID,
+                                clase_id: currentSession.clase_id,
+                                device_info: {
+                                    userAgent: navigator.userAgent,
+                                    screenSize: `${window.screen.width}x${window.screen.height}`
+                                }
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast('✓ Clase iniciada');
+                        loadSessionData();
+                    }
+                } catch (error) {
+                    console.error('Error starting class:', error);
+                    alert('Error al iniciar clase');
+                }
+            }
+        }
+
+        // End Class
+        async function endClass() {
+            if (confirm('¿Finalizar la clase?')) {
+                try {
+                    const response = await fetch(
+                        `${API_BASE_URL}/sessions/${SESSION_ID}/end`,
+                        {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                session_notes: null
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('¡Clase finalizada exitosamente!');
+                        window.location.href = '/instructor/dashboard';
+                    }
+                } catch (error) {
+                    console.error('Error ending class:', error);
+                    alert('Error al finalizar clase');
+                }
+            }
+        }
+
+        // Auto Refresh
+        function startAutoRefresh() {
+            refreshTimer = setInterval(() => {
+                loadSessionData();
+            }, REFRESH_INTERVAL);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 5rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #111827;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                font-weight: 600;
+                z-index: 300;
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshTimer) clearInterval(refreshTimer);
+        });
+    </script>
+</body>
+</html>
