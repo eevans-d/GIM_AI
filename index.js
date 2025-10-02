@@ -91,6 +91,10 @@ app.use('/api/valley-optimization', valleyOptimizationRoutes);
 const reactivationRoutes = require('./routes/api/reactivation');
 app.use('/api/reactivation', reactivationRoutes);
 
+// PROMPT 13: Nutrition Tips Routes
+const nutritionRoutes = require('./routes/api/nutrition');
+app.use('/api/nutrition', nutritionRoutes);
+
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
 

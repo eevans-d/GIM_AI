@@ -1,0 +1,40 @@
+{
+  "name": "nutrition_post_strength",
+  "language": "es",
+  "category": "UTILITY",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "💪 Nutrición Post-Fuerza"
+    },
+    {
+      "type": "BODY",
+      "text": "¡Hola {{1}}! 🏋️‍♀️\n\n{{2}}\n\n💡 *{{3}}*\n\n🍽️ *Recomendación*: {{4}}\n⏰ *Timing*: {{5}}\n\nLa proteína de calidad es esencial para la reparación y crecimiento muscular. ¡Aprovecha la ventana anabólica!"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Construye músculo inteligentemente"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "Ver receta completa"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Más tips"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "tip_description",
+    "3": "tip_title",
+    "4": "recipe_name",
+    "5": "timing"
+  }
+}
