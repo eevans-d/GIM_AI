@@ -1,0 +1,47 @@
+{
+  "name": "post_class_survey",
+  "category": "MARKETING",
+  "language": "es",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "¿Cómo estuvo tu clase? ⭐"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}! 👋\n\n¡Gracias por asistir a la clase de {{2}} con {{3}}!\n\nNos encantaría conocer tu opinión. Tu feedback nos ayuda a mejorar cada día.\n\n¿Cómo calificarías tu experiencia?"
+    },
+    {
+      "type": "FOOTER",
+      "text": "GIM_AI - Tu opinión importa 💙"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "⭐⭐⭐⭐⭐ (5)"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "⭐⭐⭐⭐ (4)"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "⭐⭐⭐ (3)"
+        }
+      ]
+    }
+  ],
+  "example": {
+    "header_text": [],
+    "body_text": [
+      [
+        "Juan",
+        "Spinning",
+        "María González"
+      ]
+    ]
+  }
+}

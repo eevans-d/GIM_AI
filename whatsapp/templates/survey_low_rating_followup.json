@@ -1,0 +1,29 @@
+{
+  "name": "survey_low_rating_followup",
+  "category": "MARKETING",
+  "language": "es",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Queremos mejorar 🙏"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}},\n\nVimos que tu experiencia en la clase de {{2}} no fue la mejor. 😔\n\nNos encantaría saber qué podemos mejorar. ¿Podrías compartir algunos detalles?\n\nResponde este mensaje con tus comentarios."
+    },
+    {
+      "type": "FOOTER",
+      "text": "Tu feedback es muy valioso para nosotros"
+    }
+  ],
+  "example": {
+    "header_text": [],
+    "body_text": [
+      [
+        "Juan",
+        "Spinning"
+      ]
+    ]
+  }
+}
