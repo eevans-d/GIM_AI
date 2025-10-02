@@ -1,0 +1,44 @@
+{
+  "name": "debt_post_workout",
+  "category": "MARKETING",
+  "language": "es",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "¡Hola {{1}}! 💪"
+    },
+    {
+      "type": "BODY",
+      "text": "¡Excelente sesión de {{2}} hoy! 🎉\n\nNotamos que tienes un saldo pendiente de ${{3}}. Para seguir disfrutando de todas las clases sin interrupciones, puedes ponerte al día ahora:\n\n{{4}}\n\nEl pago es rápido y seguro. ¡Gracias por ser parte de nuestra comunidad! 🙏"
+    },
+    {
+      "type": "FOOTER",
+      "text": "GIM_AI - Tu gimnasio inteligente"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "URL",
+          "text": "Pagar Ahora 💳",
+          "url": "{{5}}"
+        }
+      ]
+    }
+  ],
+  "example": {
+    "header_text": [
+      "Juan Pérez"
+    ],
+    "body_text": [
+      [
+        "Juan",
+        "Spinning",
+        "2500.00",
+        "https://mpago.la/abc123",
+        "https://mpago.la/abc123"
+      ]
+    ]
+  }
+}
