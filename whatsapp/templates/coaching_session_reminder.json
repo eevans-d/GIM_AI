@@ -1,0 +1,40 @@
+{
+  "name": "coaching_session_reminder",
+  "language": "es",
+  "category": "UTILITY",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "📅 Recordatorio de sesión 1:1"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, recordatorio de tu sesión de coaching:\n\n👤 Coach: {{2}}\n📅 Fecha: {{3}}\n🕐 Hora: {{4}}\n🎯 Tipo: {{5}}\n\n*Duración: 60 minutos*\n\nPor favor llega 5 minutos antes. ¡Prepárate para mejorar al máximo! 💪"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Tu sesión PRO te espera"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "✅ Confirmo"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Reagendar"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "coach_name",
+    "3": "session_date",
+    "4": "session_time",
+    "5": "session_type"
+  }
+}

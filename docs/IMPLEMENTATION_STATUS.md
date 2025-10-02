@@ -5,8 +5,8 @@
 This document tracks the implementation status of all 25 prompts for the GIM_AI system - an intelligent gym management platform with WhatsApp integration and QR check-in capabilities.
 
 **Last Updated**: Octubre 2, 2025  
-**Current Status**: 19/25 Prompts Complete (76%)  
-**Phase**: Core Features - Nutrition Tips Complete
+**Current Status**: 20/25 Prompts Complete (80%)  
+**Phase**: Core Features Complete - Advanced Features Starting
 
 ---
 
@@ -15,10 +15,10 @@ This document tracks the implementation status of all 25 prompts for the GIM_AI 
 ```
 Phase 1 - Infrastructure:    [████████████████████] 100% (4/4)
 Phase 2 - Validation:         [████████████████████] 100% (6/6)
-Phase 3 - Core Features:      [█████████████████░░░]  90% (9/10)
+Phase 3 - Core Features:      [████████████████████] 100% (10/10)
 Phase 4 - Advanced Features:  [░░░░░░░░░░░░░░░░░░░░]   0% (0/5)
 ───────────────────────────────────────────────────────────
-TOTAL PROGRESS:               [███████████████░░░░░]  76% (19/25)
+TOTAL PROGRESS:               [████████████████░░░░]  80% (20/25)
 ```
 
 ---
@@ -872,15 +872,112 @@ Hourly   - 2h class reminders
 
 ---
 
-#### ⏳ Prompt 14: Plus/Pro Tier Services
-**Status**: PENDING  
-**Priority**: MEDIUM  
-**Key Features**:
-- Plus tier ($2,500/month, 30% conversion target)
-- Pro tier ($4,500/month, 10% conversion target)
-- Adaptive training plans
-- 1:1 coaching sessions
-- Priority reservations
+#### ✅ Prompt 14: Plus/Pro Tier Services System
+**Status**: ✅ COMPLETE  
+**Completed**: Octubre 2, 2025  
+**Files**:
+- `database/schemas/tier_system_tables.sql` (5 tablas, 4 funciones SQL)
+- `database/seeds/tier_system_seed.sql` (3 tiers + 17 beneficios)
+- `services/tier-service.js` (370 líneas, 10 funciones)
+- `routes/api/tier.js` (9 REST endpoints)
+- `workers/tier-conversion-processor.js` (Bull queue con 4 jobs + cron)
+- `whatsapp/templates/tier_upgrade_offer_plus.json` (oferta Plus)
+- `whatsapp/templates/tier_upgrade_offer_pro.json` (oferta Pro)
+- `whatsapp/templates/tier_retention_offer.json` (retention con descuento)
+- `whatsapp/templates/coaching_session_reminder.json` (recordatorio 1:1)
+- `scripts/validate-prompt-14.sh` (63 validaciones - ALL PASSED ✅)
+
+**Key Deliverables**:
+- ✅ Sistema de 3 tiers (Standard $1,500, Plus $2,500, Pro $4,500)
+- ✅ Targeting automático de candidatos con scoring (0-100)
+- ✅ Retention logic con 20% descuento al intentar downgrade
+- ✅ Sesiones coaching 1:1 (4/mes en tier Pro)
+- ✅ Planes de entrenamiento adaptativos (Plus/Pro)
+- ✅ Prioridad en reservas (48h vs 24h)
+- ✅ Catálogo de beneficios diferenciados (17 beneficios)
+
+**Database Schema (5 tablas):**
+- `tier_plans` - Definición de planes con precios y límites
+- `member_tier_subscriptions` - Suscripciones activas con tracking
+- `coaching_sessions` - Sesiones 1:1 con feedback y rating
+- `training_plans` - Planes adaptativos con objetivos y progreso
+- `tier_benefits_catalog` - Catálogo de beneficios por tier
+
+**SQL Functions (4):**
+- `get_member_current_tier()` - Obtiene tier actual de miembro
+- `identify_upgrade_candidates()` - Scoring de candidatos (score 0-100)
+- `calculate_tier_roi()` - ROI y métricas por tier
+- `upgrade_member_tier()` - Proceso de upgrade con tracking
+
+**Tier Structure:**
+
+**Standard ($1,500/mes)**:
+- Clases ilimitadas
+- App móvil básica
+- Acceso a comunidad
+
+**Plus ($2,500/mes) - Target 30% conversión**:
+- Todo de Standard
+- ⭐ Prioridad reservas (48h anticipación vs 24h)
+- 📊 Plan adaptativo personalizado
+- 🥗 Tips nutricionales premium
+- 📈 Análisis mensual de progreso
+- 📱 App móvil Plus (features avanzadas)
+
+**Pro ($4,500/mes) - Target 10% conversión**:
+- Todo de Plus
+- 👤 4 sesiones coaching 1:1 mensuales
+- 🔬 Análisis biomecánico profesional
+- 🍎 Plan nutricional personalizado
+- 💎 Prioridad máxima en todo
+- 🌟 Acceso VIP + horarios exclusivos
+- 💊 Suplementación guiada
+- 💬 WhatsApp directo con coach
+
+**Targeting Logic:**
+- Candidatos: Asistencia ≥12 check-ins/mes (3x/semana)
+- Antigüedad mínima: 30 días
+- Scoring: Actividad (40pts) + Antigüedad (30pts) + Tier actual (30pts)
+- Top 10 Plus + Top 5 Pro contactados diariamente (10:00 AM)
+
+**Retention Strategy:**
+- Trigger: Intento de downgrade o cancelación
+- Oferta automática: 20% descuento por 1 mes
+- Mantiene todos los beneficios del tier actual
+- Validez: 48 horas
+- Esperado: 70-80% retention rate
+
+**API Endpoints (9):**
+- `GET /current/:member_id` - Tier actual del miembro
+- `POST /upgrade` - Upgrade a Plus/Pro
+- `POST /downgrade` - Inicia downgrade (genera retention offer)
+- `POST /downgrade/confirm` - Confirma downgrade después de retention
+- `GET /benefits` - Lista beneficios (filtro opcional por tier)
+- `GET /candidates` - Candidatos para upgrade con scoring
+- `POST /coaching-sessions` - Programa sesión 1:1 (solo Pro)
+- `POST /training-plans` - Genera plan adaptativo (Plus/Pro)
+- `GET /stats` - ROI y métricas de conversión por tier
+
+**Worker Bull Jobs:**
+- `send-upgrade-offer` - Envía oferta Plus/Pro a candidatos
+- `send-retention-offer` - Envía oferta 20% descuento al downgrade
+- `send-coaching-reminder` - Recordatorio 24h antes de sesión 1:1
+- `daily-upgrade-targeting` - Cron 10:00 AM: identifica y contacta candidatos
+
+**Impact Metrics (Expected):**
+- Plus conversion: 30% de Standard (objetivo)
+- Pro conversion: 10% de Plus (objetivo)
+- Retention rate: 70-80% con ofertas
+- Average revenue per user (ARPU): +65% con Plus, +200% con Pro
+- Coaching utilization: 80-90% de sesiones usadas
+- Lifetime value (LTV): +150% en Plus, +300% en Pro
+
+**Testing:**
+- ✅ 63 validaciones pasadas (schema, functions, service, API, worker, templates, targeting)
+- ✅ Script de validación automatizado
+- ✅ 1,155 líneas de código total
+
+---
 
 #### ⏳ Prompt 15: Executive Dashboard "Command Center"
 **Status**: PENDING  

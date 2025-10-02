@@ -1,0 +1,37 @@
+{
+  "name": "tier_upgrade_offer_plus",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "⭐ ¡Lleva tu entrenamiento al siguiente nivel!"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, hemos notado tu increíble constancia en el gym. 💪\n\n¿Sabías que con *PLUS* puedes obtener:\n\n✅ Prioridad en reservas (48h anticipación)\n✅ Plan adaptativo personalizado\n✅ Análisis mensual de progreso\n✅ Tips nutricionales premium\n\n*Solo ${{2}}/mes* - Inversión en ti que vale la pena.\n\n¿Te gustaría conocer más detalles?"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Upgrade disponible ahora"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Quiero PLUS!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Más información"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "monthly_price"
+  }
+}

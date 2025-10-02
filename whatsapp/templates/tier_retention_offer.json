@@ -1,0 +1,39 @@
+{
+  "name": "tier_retention_offer",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "⚠️ Antes de que te vayas..."
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, vemos que consideras cambiar tu plan {{2}}. 😢\n\nEntendemos que a veces las cosas se complican. Por eso tenemos algo especial para ti:\n\n🎁 *{{3}}% de descuento* en tu próximo mes\n🎁 Mantén todos tus beneficios {{2}}\n🎁 Sin compromisos adicionales\n\n*Nuevo precio: ${{4}}/mes solo por 1 mes*\n\n¿Seguimos juntos en esta meta?"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Oferta válida por 48 horas"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Acepto la oferta!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Hablar con soporte"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "current_tier",
+    "3": "discount_percentage",
+    "4": "new_price"
+  }
+}

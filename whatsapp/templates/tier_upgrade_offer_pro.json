@@ -1,0 +1,37 @@
+{
+  "name": "tier_upgrade_offer_pro",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "💎 Experiencia PRO - Elite Fitness"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, tu dedicación es excepcional. Es momento de alcanzar metas más grandes. 🏆\n\n*TIER PRO* incluye:\n\n💎 Todo de PLUS\n👤 4 sesiones coaching 1:1 mensuales\n🔬 Análisis biomecánico profesional\n🍎 Plan nutricional personalizado\n🌟 Acceso VIP y horarios exclusivos\n\n*${{2}}/mes* - Inversión en tu mejor versión.\n\n¿Listo para el siguiente nivel?"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Espacios limitados"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Quiero PRO!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Agendar llamada"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "monthly_price"
+  }
+}

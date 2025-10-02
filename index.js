@@ -95,6 +95,10 @@ app.use('/api/reactivation', reactivationRoutes);
 const nutritionRoutes = require('./routes/api/nutrition');
 app.use('/api/nutrition', nutritionRoutes);
 
+// PROMPT 14: Tier System Routes
+const tierRoutes = require('./routes/api/tier');
+app.use('/api/tier', tierRoutes);
+
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
 
