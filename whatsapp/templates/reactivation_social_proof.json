@@ -1,0 +1,37 @@
+{
+  "name": "reactivation_social_proof",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Tus compañeros preguntan por ti 👥"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, varios miembros de la clase de {{2}} han preguntado por ti. ¡Tu ausencia se nota! 😊\n\nLa comunidad del gym no es la misma sin ti. Vuelve y reconecta con tus compañeros de entrenamiento."
+    },
+    {
+      "type": "FOOTER",
+      "text": "La comunidad te espera"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Regreso ya!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Dime más"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "favorite_class"
+  }
+}

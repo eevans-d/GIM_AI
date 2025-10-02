@@ -83,6 +83,14 @@ app.use('/api/replacements', replacementsRoutes);
 app.use('/api/instructor-panel', instructorPanelRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
+// PROMPT 11: Valley Optimization Routes
+const valleyOptimizationRoutes = require('./routes/api/valley-optimization');
+app.use('/api/valley-optimization', valleyOptimizationRoutes);
+
+// PROMPT 12: Smart Reactivation Routes
+const reactivationRoutes = require('./routes/api/reactivation');
+app.use('/api/reactivation', reactivationRoutes);
+
 // Health check endpoint (enhanced)
 app.get('/health', healthEndpoint());
 

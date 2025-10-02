@@ -1,0 +1,37 @@
+{
+  "name": "reactivation_special_offer",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "🎁 Oferta exclusiva para ti"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, sabemos que la vida se complica. Por eso tenemos algo especial para ti:\n\n✨ 1 semana de clases ilimitadas GRATIS\n✨ Sin compromiso adicional\n✨ Solo para ti, válido por 7 días\n\nTu clase de {{2}} te espera. ¿Aprovechamos esta oportunidad? 💪"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Oferta válida por 7 días"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Acepto!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Ver detalles"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "favorite_class"
+  }
+}

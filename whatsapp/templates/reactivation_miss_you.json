@@ -1,0 +1,38 @@
+{
+  "name": "reactivation_miss_you",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "¡Te extrañamos en el gimnasio! 💪"
+    },
+    {
+      "type": "BODY",
+      "text": "Hola {{1}}, notamos que no has venido en {{2}} días. Tu progreso es importante para nosotros. ¿Todo bien? 🤔\n\nTu clase favorita de {{3}} te está esperando. ¡Vuelve y retoma tu ritmo!"
+    },
+    {
+      "type": "FOOTER",
+      "text": "Tu equipo del GYM"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "¡Reservo hoy!"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "Próximamente"
+        }
+      ]
+    }
+  ],
+  "parameters": {
+    "1": "member_name",
+    "2": "days_inactive",
+    "3": "favorite_class"
+  }
+}

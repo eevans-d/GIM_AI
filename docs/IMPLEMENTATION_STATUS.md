@@ -5,8 +5,8 @@
 This document tracks the implementation status of all 25 prompts for the GIM_AI system - an intelligent gym management platform with WhatsApp integration and QR check-in capabilities.
 
 **Last Updated**: Octubre 2, 2025  
-**Current Status**: 17/25 Prompts Complete (68%)  
-**Phase**: Core Features - Valley Optimization Complete
+**Current Status**: 18/25 Prompts Complete (72%)  
+**Phase**: Core Features - Smart Reactivation Complete
 
 ---
 
@@ -15,10 +15,10 @@ This document tracks the implementation status of all 25 prompts for the GIM_AI 
 ```
 Phase 1 - Infrastructure:    [████████████████████] 100% (4/4)
 Phase 2 - Validation:         [████████████████████] 100% (6/6)
-Phase 3 - Core Features:      [█████████████░░░░░░░]  70% (7/10)
+Phase 3 - Core Features:      [████████████████░░░░]  80% (8/10)
 Phase 4 - Advanced Features:  [░░░░░░░░░░░░░░░░░░░░]   0% (0/5)
 ───────────────────────────────────────────────────────────
-TOTAL PROGRESS:               [█████████████░░░░░░░]  68% (17/25)
+TOTAL PROGRESS:               [██████████████░░░░░░]  72% (18/25)
 ```
 
 ---
@@ -715,23 +715,79 @@ Hourly   - 2h class reminders
 
 ---
 
-#### ⏳ Prompt 12: Smart Reactivation (10-14 days)
-**Status**: PENDING  
-**Priority**: MEDIUM  
-**Key Features**:
-- Detect <50% occupancy × 3 weeks
-- Targeted promotions
-- Format changes
-- Schedule optimization
+#### ✅ Prompt 12: Smart Reactivation System
+**Status**: ✅ COMPLETE  
+**Completed**: Octubre 2, 2025  
+**Files**:
+- `database/schemas/reactivation_tables.sql` (2 tablas, 2 funciones SQL)
+- `services/reactivation-service.js` (239 líneas, secuencia de 3 mensajes)
+- `routes/api/reactivation.js` (5 REST endpoints)
+- `workers/reactivation-processor.js` (Bull queue con secuenciamiento)
+- `whatsapp/templates/reactivation_miss_you.json` (mensaje 1: "Te extrañamos")
+- `whatsapp/templates/reactivation_social_proof.json` (mensaje 2: "Tus compañeros preguntan")
+- `whatsapp/templates/reactivation_special_offer.json` (mensaje 3: "Oferta exclusiva")
+- `scripts/validate-prompt-12.sh` (43 validaciones - ALL PASSED ✅)
 
-#### ⏳ Prompt 12: Smart Reactivation (10-14 days)
-**Status**: PENDING  
-**Priority**: MEDIUM  
-**Key Features**:
-- 3-message sequence
-- Social proof (mention friend)
-- Favorite class suggestion
-- 35-40% reactivation rate (target)
+**Key Deliverables**:
+- ✅ Detección automática de miembros inactivos (10-14 días)
+- ✅ Filtro de elegibilidad: ≥3 check-ins previos
+- ✅ Secuencia de 3 mensajes personalizados (días 0, 3, 6)
+- ✅ Personalización con clase favorita y referencias sociales
+- ✅ Tracking de respuestas y conversiones
+- ✅ Worker Bull con cron diario (08:00 AM)
+- ✅ Estadísticas de reactivación con tasa de éxito
+
+**Database Schema (2 tablas):**
+- `reactivation_campaigns` - Campañas de reactivación con tracking de secuencia
+- `reactivation_messages` - Mensajes individuales enviados (1-3 por campaña)
+
+**SQL Functions (2):**
+- `detect_inactive_members()` - Detecta miembros con 10-14 días sin asistir + ≥3 check-ins previos
+- `create_reactivation_campaign()` - Crea campaña con datos de personalización
+
+**Secuencia de Mensajes (3 fases):**
+1. **Mensaje 1 - "Te extrañamos" (día 0)**
+   - Tono: Empático y personal
+   - Contenido: Menciona días inactivo y clase favorita
+   - CTA: Botones "¡Reservo hoy!" / "Próximamente"
+   - Template: `reactivation_miss_you`
+
+2. **Mensaje 2 - Prueba Social (día 3)**
+   - Tono: Conexión comunitaria
+   - Contenido: "Tus compañeros preguntan por ti"
+   - CTA: Botones "¡Regreso ya!" / "Dime más"
+   - Template: `reactivation_social_proof`
+
+3. **Mensaje 3 - Oferta Especial (día 6)**
+   - Tono: Urgencia y valor
+   - Contenido: 1 semana gratis + clase favorita
+   - CTA: Botones "¡Acepto!" / "Ver detalles"
+   - Template: `reactivation_special_offer`
+
+**API Endpoints (5):**
+- `POST /detect` - Ejecuta detección diaria de inactivos
+- `POST /campaigns` - Crea campaña manual de reactivación
+- `POST /campaigns/:id/send` - Envía siguiente mensaje en secuencia
+- `POST /campaigns/:id/reactivate` - Registra reactivación exitosa
+- `GET /stats` - Obtiene estadísticas de reactivación
+
+**Worker Bull Jobs:**
+- `send-message` - Envía mensajes con secuenciamiento automático (delay 3 días)
+- `daily-detection` - Cron diario (08:00 AM) para detección de inactivos
+
+**Impact Metrics (Expected):**
+- Reactivation rate: 35-40% (objetivo del sistema)
+- Response rate: 60-70% en mensaje 1
+- Conversion en mensaje 3: 15-20%
+- Tiempo promedio de reactivación: 4-5 días
+- Detección automatizada 100%
+
+**Testing:**
+- ✅ 43 validaciones pasadas (schema, functions, service, API, worker, templates, lógica)
+- ✅ Script de validación automatizado
+- ✅ 698 líneas de código total
+
+---
 
 #### ⏳ Prompt 13: Post-workout Nutrition
 **Status**: PENDING  
