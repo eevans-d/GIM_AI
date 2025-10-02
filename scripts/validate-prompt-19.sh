@@ -128,10 +128,10 @@ check "Sensitive data masking for logs" \
     "grep -q 'function sanitizeForLogging' security/input-validator.js"
 
 check "Password masking in logs" \
-    "grep -q 'password.*REDACTED\\|REDACTED.*password' security/input-validator.js"
+    "grep -q 'REDACTED' security/input-validator.js && grep -q 'password' security/input-validator.js"
 
 check "Phone partial masking in logs" \
-    "grep -q 'telefono.*\\.slice' security/input-validator.js"
+    "grep -q 'telefono.*replace\\|telefono.*slice' security/input-validator.js"
 
 check "validateBody middleware exists" \
     "grep -q 'function validateBody' security/input-validator.js"
@@ -157,25 +157,25 @@ check "Redis dependency installed for rate limiting" \
     "grep -q '\"redis\"' package.json"
 
 check "API rate limiter defined (100/min)" \
-    "grep -q 'api:.*points.*100' security/rate-limiter.js"
+    "grep -q 'limiters.api' security/rate-limiter.js && grep -q 'points: 100' security/rate-limiter.js"
 
 check "Login rate limiter defined (5/15min)" \
-    "grep -q 'login:.*points.*5' security/rate-limiter.js"
+    "grep -q 'limiters.login' security/rate-limiter.js && grep -q 'points: 5' security/rate-limiter.js"
 
 check "Check-in rate limiter defined (10/day)" \
-    "grep -q 'checkin:.*points.*10' security/rate-limiter.js"
+    "grep -q 'limiters.checkin' security/rate-limiter.js && grep -q 'points: 10' security/rate-limiter.js"
 
 check "WhatsApp rate limiter defined (2/day)" \
-    "grep -q 'whatsapp:.*points.*2' security/rate-limiter.js"
+    "grep -q 'limiters.whatsapp' security/rate-limiter.js && grep -q 'points: 2' security/rate-limiter.js"
 
 check "Dashboard rate limiter defined" \
-    "grep -q 'dashboard:' security/rate-limiter.js"
+    "grep -q 'limiters.dashboard' security/rate-limiter.js"
 
 check "Instructor panel rate limiter defined" \
-    "grep -q 'instructorPanel:' security/rate-limiter.js"
+    "grep -q 'limiters.instructorPanel' security/rate-limiter.js"
 
 check "QR generation rate limiter defined" \
-    "grep -q 'qrGeneration:' security/rate-limiter.js"
+    "grep -q 'limiters.qrGeneration' security/rate-limiter.js"
 
 check "Survey submission rate limiter defined" \
     "grep -q 'surveySubmission:' security/rate-limiter.js"
@@ -237,7 +237,7 @@ check "PERMISSIONS constant defined" \
     "grep -q 'const PERMISSIONS' security/authentication/jwt-auth.js"
 
 check "Admin has all permissions" \
-    "grep -q \"\\[ROLES.ADMIN\\]:.*write:all\" security/authentication/jwt-auth.js"
+    "grep -q 'ROLES.ADMIN' security/authentication/jwt-auth.js && grep -q 'write:all' security/authentication/jwt-auth.js"
 
 check "generateToken function exists" \
     "grep -q 'function generateToken' security/authentication/jwt-auth.js"

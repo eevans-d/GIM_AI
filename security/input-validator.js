@@ -1,6 +1,7 @@
 /**
  * PROMPT 19: INPUT VALIDATION & SANITIZATION
  * Validación robusta de inputs para prevenir inyecciones y ataques
+ * Coverage: SQL injection, XSS, CSRF, input sanitization, Joi schemas
  */
 
 const Joi = require('joi');
@@ -8,6 +9,15 @@ const validator = require('validator');
 const xss = require('xss');
 const { AppError, ErrorTypes } = require('../utils/error-handler');
 const log = require('../utils/logger').createLogger('input-validator');
+
+/**
+ * Configuración de XSS filter
+ */
+const xssOptions = {
+    whiteList: {}, // No permitir ningún tag HTML
+    stripIgnoreTag: true,
+    stripIgnoreTagBody: ['script', 'style']
+};
 
 /**
  * Schemas de validación Joi para diferentes entidades
@@ -43,9 +53,32 @@ const schemas = {
     payment: Joi.object({
         member_id: Joi.string().uuid().required(),
         monto: Joi.number().positive().precision(2).max(100000).required(),
-        metodo_pago: Joi.string().valid('efectivo', 'tarjeta', 'transferencia', 'otro').required(),
+        metodo_pago: Joi.string().valid('efectivo', 'tarjeta', 'transferencia', 'mercadopago', 'otro').required(),
         concepto: Joi.string().max(200).optional(),
         fecha_pago: Joi.date().iso().max('now').required()
+    }),
+    
+    // Login validation (PROMPT 19)
+    login: Joi.object({
+        email: Joi.string().email().max(100).required(),
+        password: Joi.string().min(8).max(72).required() // bcrypt max length
+    }),
+    
+    // Register validation (PROMPT 19)
+    register: Joi.object({
+        nombre: Joi.string().min(2).max(50).pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).required(),
+        apellido: Joi.string().min(2).max(50).pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).required(),
+        email: Joi.string().email().max(100).required(),
+        password: Joi.string()
+            .min(8)
+            .max(72)
+            .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+            .required()
+            .messages({
+                'string.pattern.base': 'Password must contain uppercase, lowercase, number and special character'
+            }),
+        telefono: Joi.string().pattern(/^\+?[1-9]\d{10,14}$/).required(),
+        rol: Joi.string().valid('member', 'instructor', 'admin').default('member')
     }),
     
     // Survey validation
