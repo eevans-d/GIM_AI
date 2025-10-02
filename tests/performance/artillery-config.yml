@@ -1,0 +1,206 @@
+# PROMPT 18: ARTILLERY PERFORMANCE TESTS
+# Load testing y stress testing para APIs
+# Coverage: Dashboard endpoints, check-in flow, concurrent users
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    # Warm-up: 10 usuarios durante 30s
+    - duration: 30
+      arrivalRate: 10
+      name: "Warm-up"
+    
+    # Ramp-up: Incrementar a 50 usuarios/s en 60s
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 50
+      name: "Ramp-up"
+    
+    # Sustained load: 50 usuarios/s durante 120s
+    - duration: 120
+      arrivalRate: 50
+      name: "Sustained load"
+    
+    # Spike: 100 usuarios/s durante 30s
+    - duration: 30
+      arrivalRate: 100
+      name: "Spike test"
+    
+    # Cool-down: Reducir a 10 usuarios/s en 30s
+    - duration: 30
+      arrivalRate: 50
+      rampTo: 10
+      name: "Cool-down"
+  
+  # Variables de entorno
+  variables:
+    member_id: "12345678-1234-1234-1234-123456789012"
+    class_id: "87654321-4321-4321-4321-210987654321"
+    qr_code: "GIM-TEST-001"
+  
+  # Plugins
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+  
+  # Procesador personalizado
+  processor: "./tests/performance/artillery-processor.js"
+  
+  # Configuración de HTTP
+  http:
+    timeout: 10
+    pool: 50
+  
+  # Métricas
+  ensure:
+    maxErrorRate: 1 # Máximo 1% de errores
+    p99: 2000 # Percentil 99 < 2s
+    p95: 1000 # Percentil 95 < 1s
+
+scenarios:
+  # ========================================================================
+  # SCENARIO 1: Dashboard API Load Test
+  # ========================================================================
+  - name: "Dashboard KPIs Load Test"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/dashboard/kpis/realtime"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: "success"
+      
+      - get:
+          url: "/api/dashboard/kpis/financial"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/dashboard/kpis/operational"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/dashboard/kpis/satisfaction"
+          expect:
+            - statusCode: 200
+      
+      - think: 2 # Esperar 2 segundos
+      
+      - get:
+          url: "/api/dashboard/decisions/today"
+          expect:
+            - statusCode: 200
+      
+      - get:
+          url: "/api/dashboard/alerts/active"
+          expect:
+            - statusCode: 200
+  
+  # ========================================================================
+  # SCENARIO 2: Check-in Flow Stress Test
+  # ========================================================================
+  - name: "Check-in Flow Stress Test"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/qr/validate"
+          json:
+            qr_code: "{{ qr_code }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "valid"
+      
+      - think: 1
+      
+      - post:
+          url: "/api/checkin"
+          json:
+            qr_code: "{{ qr_code }}"
+            clase_id: "{{ class_id }}"
+          expect:
+            - statusCode: [200, 400] # Puede fallar por duplicado
+      
+      - get:
+          url: "/api/checkin/class/{{ class_id }}"
+          expect:
+            - statusCode: 200
+  
+  # ========================================================================
+  # SCENARIO 3: Survey Submission Load Test
+  # ========================================================================
+  - name: "Survey Submission Load Test"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/surveys/trigger"
+          json:
+            member_id: "{{ member_id }}"
+          beforeRequest: "generateRandomMemberId"
+          expect:
+            - statusCode: 200
+      
+      - think: 1
+      
+      - post:
+          url: "/api/surveys/respond"
+          json:
+            survey_id: "{{ $randomUUID }}"
+            rating: "{{ $randomInt(1, 5) }}"
+            nps_score: "{{ $randomInt(0, 10) }}"
+            comment: "Test comment from Artillery"
+          expect:
+            - statusCode: [200, 404] # Puede fallar si survey no existe
+      
+      - get:
+          url: "/api/surveys/stats"
+          expect:
+            - statusCode: 200
+  
+  # ========================================================================
+  # SCENARIO 4: Instructor Panel Concurrent Access
+  # ========================================================================
+  - name: "Instructor Panel Concurrent Access"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/instructor-panel/session/start"
+          json:
+            instructor_id: "{{ $randomUUID }}"
+            clase_id: "{{ class_id }}"
+          expect:
+            - statusCode: [200, 400]
+      
+      - get:
+          url: "/api/instructor-panel/session/{{ $randomUUID }}"
+          expect:
+            - statusCode: [200, 404]
+      
+      - post:
+          url: "/api/instructor-panel/attendance/mark"
+          json:
+            instructor_id: "{{ $randomUUID }}"
+            clase_id: "{{ class_id }}"
+            member_id: "{{ member_id }}"
+            presente: true
+          expect:
+            - statusCode: [200, 400]
+  
+  # ========================================================================
+  # SCENARIO 5: Mixed API Load Test
+  # ========================================================================
+  - name: "Mixed API Load Test"
+    weight: 5
+    flow:
+      - loop:
+          - get:
+              url: "/api/dashboard/trends/ingresos_diarios?days=7"
+          - get:
+              url: "/api/reminders/member/{{ member_id }}"
+          - get:
+              url: "/api/collection/pending"
+          - get:
+              url: "/api/replacements/pending"
+          - think: 1
+        count: 3
