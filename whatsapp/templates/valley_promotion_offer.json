@@ -1,0 +1,47 @@
+{
+  "name": "valley_promotion_offer",
+  "language": "es",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "🎯 Oferta Especial para Ti"
+    },
+    {
+      "type": "BODY",
+      "text": "¡Hola {{1}}! 👋\n\nNotamos que aún no has probado nuestras clases de *{{2}}* los {{3}} a las {{4}}.\n\n✨ *Oferta Exclusiva:*\n• {{5}}% de descuento en tu primer mes\n• Horario perfecto para tu rutina\n• Cupos limitados disponibles\n\n¿Te gustaría probarlo? Responde *SÍ* y te reservo tu lugar.",
+      "parameters": [
+        {"type": "TEXT"},
+        {"type": "TEXT"},
+        {"type": "TEXT"},
+        {"type": "TEXT"},
+        {"type": "TEXT"}
+      ]
+    },
+    {
+      "type": "FOOTER",
+      "text": "Oferta válida por tiempo limitado"
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "QUICK_REPLY",
+          "text": "✅ Me interesa"
+        },
+        {
+          "type": "QUICK_REPLY",
+          "text": "ℹ️ Más info"
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "1": "member_name",
+    "2": "class_type",
+    "3": "day_of_week",
+    "4": "time",
+    "5": "discount_percentage"
+  }
+}

@@ -5,8 +5,8 @@
 This document tracks the implementation status of all 25 prompts for the GIM_AI system - an intelligent gym management platform with WhatsApp integration and QR check-in capabilities.
 
 **Last Updated**: Octubre 2, 2025  
-**Current Status**: 16/25 Prompts Complete (64%)  
-**Phase**: Security & Quality Assurance Complete
+**Current Status**: 17/25 Prompts Complete (68%)  
+**Phase**: Core Features - Valley Optimization Complete
 
 ---
 
@@ -15,10 +15,10 @@ This document tracks the implementation status of all 25 prompts for the GIM_AI 
 ```
 Phase 1 - Infrastructure:    [████████████████████] 100% (4/4)
 Phase 2 - Validation:         [████████████████████] 100% (6/6)
-Phase 3 - Core Features:      [████████████░░░░░░░░]  60% (6/10)
+Phase 3 - Core Features:      [█████████████░░░░░░░]  70% (7/10)
 Phase 4 - Advanced Features:  [░░░░░░░░░░░░░░░░░░░░]   0% (0/5)
 ───────────────────────────────────────────────────────────
-TOTAL PROGRESS:               [█████████████░░░░░░░]  64% (16/25)
+TOTAL PROGRESS:               [█████████████░░░░░░░]  68% (17/25)
 ```
 
 ---
@@ -612,7 +612,110 @@ Hourly   - 2h class reminders
 
 ---
 
-#### ⏳ Prompt 11: Valley Optimization
+#### ✅ Prompt 11: Valley Optimization System
+**Status**: ✅ COMPLETE  
+**Completed**: Octubre 2, 2025  
+**Files**:
+- `database/schemas/valley_optimization_tables.sql` (6 tablas, 1 vista materializada)
+- `database/functions/valley_optimization_functions.sql` (7 funciones SQL)
+- `services/valley-optimization-service.js` (720 líneas, lógica completa)
+- `routes/api/valley-optimization.js` (10 REST endpoints)
+- `workers/valley-optimization-processor.js` (Bull queue processor)
+- `whatsapp/templates/valley_promotion_offer.json` (template promocional)
+- `scripts/validate-prompt-11.sh` (53 validaciones - ALL PASSED ✅)
+
+**Key Deliverables**:
+- ✅ Detección automática de clases con <50% ocupación (3 semanas consecutivas)
+- ✅ Sistema de promociones segmentadas con scoring de elegibilidad
+- ✅ Estrategia multi-nivel (Promoción → Formato → Reubicación → Pausa)
+- ✅ Tracking de conversión y ROI de promociones
+- ✅ Vista materializada de clases valle actualizada diariamente
+- ✅ Worker Bull para envío masivo de promociones WhatsApp
+- ✅ Escalamiento automático de estrategias
+
+**Database Schema (6 tablas):**
+- `valley_detections` - Registro de clases con baja ocupación
+- `valley_promotions` - Campañas promocionales con métricas
+- `valley_promotion_recipients` - Tracking individual de destinatarios
+- `valley_strategy_escalations` - Historial de escalamiento (nivel 1→2→3→4)
+- `class_occupancy_history` - Historial diario de ocupación por clase
+- `v_valley_classes_current` - Vista materializada con métricas de 3 semanas
+
+**SQL Functions (7):**
+- `detect_valley_classes()` - Detecta clases con ocupación <threshold
+- `create_valley_detection()` - Crea registro de detección valle
+- `get_promotion_target_members()` - Identifica miembros elegibles con scoring
+- `create_valley_promotion()` - Crea campaña con destinatarios automáticos
+- `record_class_occupancy_daily()` - Registra ocupación diaria (cron nocturno)
+- `escalate_valley_strategy()` - Escala al siguiente nivel de estrategia
+- `calculate_valley_roi()` - Calcula ROI de campaña promocional
+
+**Estrategia Multi-Nivel:**
+1. **Nivel 1 - Promoción Segmentada (20% descuento)**
+   - Target: Miembros que nunca usaron ese horario
+   - Scoring de elegibilidad (0-100)
+   - Envío WhatsApp personalizado
+   - Tracking de conversión
+
+2. **Nivel 2 - Cambio de Formato**
+   - Si no mejora en 2 semanas
+   - Añadir valor sin cambiar costo (ej: "Pilates + Mindfulness")
+   - Mantener mismo horario
+
+3. **Nivel 3 - Reubicación Horaria**
+   - Análisis de mejor horario por demanda
+   - Comunicación 2 semanas anticipadas
+   - Migración controlada de miembros
+
+4. **Nivel 4 - Pausa Temporal (4 semanas)**
+   - Evaluación final de viabilidad
+   - Reasignación de recursos
+   - Posible eliminación o re-lanzamiento
+
+**API Endpoints (10):**
+- `POST /analyze` - Ejecuta análisis diario de clases valle
+- `GET /detections` - Obtiene detecciones activas
+- `GET /classes` - Vista consolidada de todas las clases
+- `POST /promotions` - Crea promoción para clase valle
+- `GET /promotions/:id` - Reporte detallado de promoción con ROI
+- `PUT /promotions/:id/activate` - Activa promoción programada
+- `GET /promotions/:claseId/target-members` - Miembros elegibles con scoring
+- `PUT /recipients/:id/response` - Registra respuesta de miembro
+- `POST /conversions` - Registra conversión (primera asistencia)
+- `POST /detections/:id/escalate` - Escala estrategia a siguiente nivel
+- `GET /stats` - Estadísticas generales del sistema valle
+
+**Scoring de Elegibilidad (0-100):**
+- 40 pts: Nunca asistió a esa clase específica
+- 30 pts: Miembro activo (check-in últimos 30 días)
+- 20 pts: Miembro comprometido (12+ asistencias totales)
+- 10 pts: Horario diferente a su preferencia habitual
+
+**WhatsApp Template:**
+- `valley_promotion_offer` - Categoría MARKETING
+- Variables: member_name, class_type, day_of_week, time, discount_percentage
+- Quick reply buttons: "Me interesa" / "Más info"
+
+**Bull Queue Jobs:**
+- `send-promotion` - Envío individual con retry (3 intentos, backoff exponencial)
+- `daily-analysis` - Cron diario (06:00 AM) para análisis y detección
+- Delay aleatorio 0-60s entre envíos para evitar spam detection
+
+**Impact Metrics (Expected):**
+- Occupancy improvement: +10-15pp en horarios valle
+- Promotion conversion rate: 25-35%
+- Same-day first attendance: 40-50%
+- ROI: 200-300% en 3 meses
+- Admin time saved: Detección y promoción 100% automatizada
+
+**Testing:**
+- ✅ 53 validaciones pasadas (database, functions, service, API, templates, workers)
+- ✅ Script de validación automatizado
+- ✅ 2,172 líneas de código total
+
+---
+
+#### ⏳ Prompt 12: Smart Reactivation (10-14 days)
 **Status**: PENDING  
 **Priority**: MEDIUM  
 **Key Features**:
