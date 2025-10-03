@@ -254,7 +254,7 @@ async function createPromotion(params) {
             ErrorTypes.INTERNAL_ERROR,
             500,
             { originalError: error.message }
-        });
+        );
     }
 }
 
