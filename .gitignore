@@ -106,6 +106,8 @@ temp/
 backups/
 *.backup
 *.bak
+*.local_backup_*/
+*_backup_*/
 
 # Database dumps
 *.sql.gz
@@ -119,6 +121,7 @@ build/
 test-results/
 playwright-report/
 screenshots/
+qa-reports/
 
 # N8N local files
 .n8n/
