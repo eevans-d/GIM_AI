@@ -244,7 +244,7 @@ async function auditSecurity() {
     // 2.3 Helmet.js y security headers
     log.info('Verificando configuración de seguridad...');
     const helmetCheck = execCommand(
-      "grep -r 'helmet' index.js || echo 'not found'",
+      "grep -r 'helmet' index.js security/security-middleware.js 2>/dev/null || echo 'not found'",
       { silent: true }
     );
     

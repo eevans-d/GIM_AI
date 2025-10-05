@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-10-05T04:04:11.197Z",
-  "totalScore": 88.49,
-  "grade": "✅ BUENO",
-  "status": "DEPLOY_WITH_MONITORING",
+  "timestamp": "2025-10-05T04:31:12.542Z",
+  "totalScore": 90.99,
+  "grade": "🏆 EXCELENTE",
+  "status": "READY_TO_DEPLOY",
   "areas": [
     {
       "name": "architecture",
@@ -33,9 +33,9 @@
     },
     {
       "name": "security",
-      "score": 80,
+      "score": 92.5,
       "weight": 0.2,
-      "weightedScore": 16,
+      "weightedScore": 18.5,
       "checks": {
         "vulnerabilities": {
           "score": 100,
@@ -49,14 +49,14 @@
           "found": 0
         },
         "securityConfig": {
-          "score": 40,
-          "helmet": false
+          "score": 90,
+          "helmet": true
         },
         "https": {
           "score": 80
         }
       },
-      "issuesCount": 1
+      "issuesCount": 0
     },
     {
       "name": "database",
@@ -145,7 +145,7 @@
         },
         "docs": {
           "score": 100,
-          "count": 25
+          "count": 38
         },
         "deployment": {
           "score": 95,
@@ -212,10 +212,6 @@
     }
   ],
   "issues": [
-    {
-      "area": "security",
-      "issue": "Helmet.js no detectado en index.js"
-    },
     {
       "area": "testing",
       "issue": "Cobertura de tests baja: 2.1%"
