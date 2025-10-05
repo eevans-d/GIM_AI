@@ -1,0 +1,240 @@
+{
+  "timestamp": "2025-10-05T04:04:11.197Z",
+  "totalScore": 88.49,
+  "grade": "✅ BUENO",
+  "status": "DEPLOY_WITH_MONITORING",
+  "areas": [
+    {
+      "name": "architecture",
+      "score": 93.75,
+      "weight": 0.15,
+      "weightedScore": 14.06,
+      "checks": {
+        "eslint": {
+          "score": 100,
+          "errors": 0,
+          "warnings": 0
+        },
+        "complexity": {
+          "score": 85,
+          "totalFiles": 110
+        },
+        "duplication": {
+          "score": 90,
+          "percentage": 5
+        },
+        "structure": {
+          "score": 100,
+          "dirsFound": 10,
+          "dirsRequired": 10
+        }
+      },
+      "issuesCount": 0
+    },
+    {
+      "name": "security",
+      "score": 80,
+      "weight": 0.2,
+      "weightedScore": 16,
+      "checks": {
+        "vulnerabilities": {
+          "score": 100,
+          "critical": 0,
+          "high": 0,
+          "moderate": 0,
+          "low": 0
+        },
+        "secrets": {
+          "score": 100,
+          "found": 0
+        },
+        "securityConfig": {
+          "score": 40,
+          "helmet": false
+        },
+        "https": {
+          "score": 80
+        }
+      },
+      "issuesCount": 1
+    },
+    {
+      "name": "database",
+      "score": 86.25,
+      "weight": 0.15,
+      "weightedScore": 12.94,
+      "checks": {
+        "schemas": {
+          "score": 90,
+          "count": 15
+        },
+        "migrations": {
+          "score": 85,
+          "count": 2
+        },
+        "functions": {
+          "score": 88,
+          "count": 4
+        },
+        "queries": {
+          "score": 82,
+          "count": 1
+        }
+      },
+      "issuesCount": 0
+    },
+    {
+      "name": "performance",
+      "score": 85.75,
+      "weight": 0.15,
+      "weightedScore": 12.86,
+      "checks": {
+        "redis": {
+          "score": 90,
+          "configured": true
+        },
+        "caching": {
+          "score": 85,
+          "references": 133
+        },
+        "queues": {
+          "score": 88,
+          "configured": true
+        },
+        "pooling": {
+          "score": 80
+        }
+      },
+      "issuesCount": 0
+    },
+    {
+      "name": "testing",
+      "score": 47.37,
+      "weight": 0.15,
+      "weightedScore": 7.11,
+      "checks": {
+        "coverage": {
+          "score": 2.1025,
+          "lines": 1.9,
+          "statements": 1.84,
+          "functions": 2.08,
+          "branches": 2.59
+        },
+        "testFiles": {
+          "score": 80,
+          "count": 16
+        },
+        "testTypes": {
+          "score": 60,
+          "unit": 0,
+          "integration": 10,
+          "e2e": 1
+        }
+      },
+      "issuesCount": 1
+    },
+    {
+      "name": "documentation",
+      "score": 96.25,
+      "weight": 0.1,
+      "weightedScore": 9.63,
+      "checks": {
+        "readme": {
+          "score": 90,
+          "size": 4828
+        },
+        "docs": {
+          "score": 100,
+          "count": 25
+        },
+        "deployment": {
+          "score": 95,
+          "count": 4
+        },
+        "comments": {
+          "score": 100,
+          "count": 759
+        }
+      },
+      "issuesCount": 0
+    },
+    {
+      "name": "integrations",
+      "score": 69,
+      "weight": 0.1,
+      "weightedScore": 6.9,
+      "checks": {
+        "whatsapp": {
+          "score": 92,
+          "files": 7
+        },
+        "supabase": {
+          "score": 90,
+          "configured": true
+        },
+        "n8n": {
+          "score": 88,
+          "workflows": 3
+        },
+        "errorHandling": {
+          "score": 6,
+          "count": 2
+        }
+      },
+      "issuesCount": 0
+    },
+    {
+      "name": "deployment",
+      "score": 90,
+      "weight": 0.1,
+      "weightedScore": 9,
+      "checks": {
+        "environment": {
+          "score": 95,
+          "example": true,
+          "production": true
+        },
+        "scripts": {
+          "score": 90,
+          "count": 1
+        },
+        "cicd": {
+          "score": 85,
+          "configured": true
+        },
+        "docker": {
+          "score": 90,
+          "dockerfile": true,
+          "compose": true
+        }
+      },
+      "issuesCount": 0
+    }
+  ],
+  "issues": [
+    {
+      "area": "security",
+      "issue": "Helmet.js no detectado en index.js"
+    },
+    {
+      "area": "testing",
+      "issue": "Cobertura de tests baja: 2.1%"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "area": "testing",
+      "message": "Área testing tiene score bajo (47.4/100)",
+      "actions": [
+        "Cobertura de tests baja: 2.1%"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "area": "integrations",
+      "message": "Área integrations tiene score bajo (69.0/100)",
+      "actions": []
+    }
+  ]
+}
