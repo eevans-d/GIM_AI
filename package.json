@@ -28,7 +28,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,json,md}\""
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "qa:audit-complete": "node scripts/qa/audit-complete.js",
+    "qa:generate-metrics": "node scripts/qa/generate-metrics.js",
+    "qa:performance-benchmark": "node scripts/qa/performance-benchmark.js",
+    "qa:all": "npm run qa:audit-complete && npm run qa:generate-metrics"
   },
   "keywords": [
     "gym-management",
