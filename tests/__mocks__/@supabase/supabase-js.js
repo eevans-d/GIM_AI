@@ -3,6 +3,7 @@
  * Used for unit testing
  */
 
+// Datos mock para testing
 const mockData = {
   members: [
     {
@@ -42,151 +43,207 @@ const mockData = {
       instructor_id: '723e4567-e89b-12d3-a456-426614174006',
       capacidad_maxima: 15
     }
-  ]
+  ],
+  system_logs: [] // Añadido para evitar errores al registrar logs
 };
 
-// Mock implementations for Supabase
-const mockFrom = (table) => {
-  if (!mockData[table]) {
-    throw new Error(`Table ${table} not found in mock data`);
-  }
-
-  let query = [...mockData[table]];
-  let conditions = {};
-  let singleResult = false;
-
+// Mock para Supabase Client
+const createClient = jest.fn().mockImplementation(() => {
+  // Mock de la función 'from' para acceder a tablas
+  const from = (table) => {
+    console.log(`[MOCK] Accessing table: ${table}`);
+    
+    // Si la tabla no existe, creamos un array vacío
+    if (!mockData[table]) {
+      console.log(`[MOCK] Table ${table} does not exist, creating empty array`);
+      mockData[table] = [];
+    }
+    
+    return {
+      // Select query
+      select: (columns) => {
+        console.log(`[MOCK] Selecting columns: ${columns}`);
+        
+        return {
+          // Filtro eq (equals)
+          eq: (column, value) => {
+            console.log(`[MOCK] Filtering where ${column} = ${value}`);
+            
+            return {
+              // Para un único resultado
+              single: () => {
+                const result = mockData[table].find(item => 
+                  item[column] && item[column].toString() === value.toString()
+                );
+                
+                console.log(`[MOCK] Single result:`, result ? 'found' : 'not found');
+                
+                return {
+                  data: result || null,
+                  error: result ? null : new Error(`Item not found in ${table}`)
+                };
+              },
+              
+              // Para agregar otro filtro eq
+              eq: (column2, value2) => {
+                console.log(`[MOCK] Adding filter: ${column2} = ${value2}`);
+                
+                return {
+                  single: () => {
+                    const result = mockData[table].find(item => 
+                      item[column] && item[column].toString() === value.toString() &&
+                      item[column2] && item[column2].toString() === value2.toString()
+                    );
+                    
+                    return {
+                      data: result || null,
+                      error: result ? null : new Error(`Item not found in ${table}`)
+                    };
+                  }
+                };
+              },
+              
+              // Para otro tipo de filtro (is)
+              is: (column2, value2) => {
+                console.log(`[MOCK] Adding filter: ${column2} is ${value2}`);
+                
+                // Filtrar por columna y valor, añadiendo el filtro 'is'
+                const filtered = mockData[table].filter(item => {
+                  const matchesEq = item[column] && item[column].toString() === value.toString();
+                  const matchesIs = value2 === null ? item[column2] === null : 
+                    (item[column2] && item[column2].toString() === value2.toString());
+                  return matchesEq && matchesIs;
+                });
+                
+                return {
+                  data: filtered,
+                  error: null
+                };
+              }
+            };
+          },
+          
+          // Filtro is (para null)
+          is: (column, value) => {
+            console.log(`[MOCK] Filtering where ${column} is ${value}`);
+            
+            return {
+              // Para agregar otro filtro eq
+              eq: (column2, value2) => {
+                console.log(`[MOCK] Adding filter: ${column2} = ${value2}`);
+                
+                // Filtrar por columna y valor
+                const filtered = mockData[table].filter(item => {
+                  const matchesIs = value === null ? item[column] === null : 
+                    (item[column] && item[column].toString() === value.toString());
+                  const matchesEq = item[column2] && item[column2].toString() === value2.toString();
+                  return matchesIs && matchesEq;
+                });
+                
+                return {
+                  data: filtered,
+                  error: null
+                };
+              }
+            };
+          },
+          
+          // Para obtener un único resultado
+          single: () => {
+            const result = mockData[table].length > 0 ? mockData[table][0] : null;
+            return {
+              data: result,
+              error: result ? null : new Error(`No records in ${table}`)
+            };
+          }
+        };
+      },
+      
+      // Update query
+      update: (updateData) => {
+        console.log(`[MOCK] Updating with data:`, updateData);
+        
+        return {
+          eq: (column, value) => {
+            console.log(`[MOCK] Updating where ${column} = ${value}`);
+            
+            let updated = false;
+            let updatedData = null;
+            
+            // Buscar y actualizar el elemento
+            mockData[table] = mockData[table].map(item => {
+              if (item[column] && item[column].toString() === value.toString()) {
+                updated = true;
+                updatedData = { ...item, ...updateData };
+                return updatedData;
+              }
+              return item;
+            });
+            
+            return {
+              data: updated ? [updatedData] : [],
+              error: updated ? null : new Error(`Item not found for update in ${table}`)
+            };
+          }
+        };
+      },
+      
+      // Insert query
+      insert: (insertData) => {
+        const dataToInsert = Array.isArray(insertData) ? insertData : [insertData];
+        console.log(`[MOCK] Inserting ${dataToInsert.length} records`);
+        
+        // Añadir a los datos existentes
+        mockData[table] = [...mockData[table], ...dataToInsert];
+        
+        return {
+          data: dataToInsert,
+          error: null
+        };
+      },
+      
+      // Delete query
+      delete: () => {
+        return {
+          eq: (column, value) => {
+            console.log(`[MOCK] Deleting where ${column} = ${value}`);
+            
+            const itemsToDelete = mockData[table].filter(item => 
+              item[column] && item[column].toString() === value.toString()
+            );
+            
+            mockData[table] = mockData[table].filter(item => 
+              !(item[column] && item[column].toString() === value.toString())
+            );
+            
+            return {
+              data: itemsToDelete,
+              error: itemsToDelete.length ? null : new Error(`Item not found for delete in ${table}`)
+            };
+          }
+        };
+      }
+    };
+  };
+  
+  // Retornar el cliente mockeado
   return {
-    select: (columns) => {
-      // This is a simplified mock, we're not actually filtering columns
-      return {
-        eq: (column, value) => {
-          conditions[column] = value;
-          return {
-            single: () => {
-              singleResult = true;
-              return {
-                eq: (column2, value2) => {
-                  conditions[column2] = value2;
-                  return {
-                    single: () => {
-                      singleResult = true;
-                      return handleResult();
-                    },
-                    is: (column3, value3) => {
-                      conditions[column3] = value3;
-                      return handleResult();
-                    }
-                  };
-                },
-                is: (column2, value2) => {
-                  conditions[column2] = value2;
-                  return handleResult();
-                }
-              };
-            },
-            is: (column2, value2) => {
-              conditions[column2] = value2;
-              return handleResult();
-            }
-          };
-        },
-        is: (column, value) => {
-          conditions[column] = value;
-          return handleResult();
-        },
-        single: () => {
-          singleResult = true;
-          return handleResult();
-        }
-      };
+    from,
+    storage: {
+      from: () => ({
+        upload: jest.fn().mockResolvedValue({ data: { path: 'test-path' } }),
+        getPublicUrl: jest.fn().mockReturnValue({ publicURL: 'https://example.com/test-path' })
+      })
     },
-    update: (updateData) => {
-      return {
-        eq: (column, value) => {
-          // Find and update the item
-          let updated = false;
-          query.forEach((item, index) => {
-            if (item[column] && item[column].toString() === value.toString()) {
-              query[index] = { ...item, ...updateData };
-              updated = true;
-            }
-          });
-
-          return {
-            data: updated ? [query.find(item => item[column] && item[column].toString() === value.toString())] : [],
-            error: updated ? null : new Error('Item not found')
-          };
-        }
-      };
-    },
-    insert: (insertData) => {
-      // For array or single object
-      const dataToInsert = Array.isArray(insertData) ? insertData : [insertData];
-      query = [...query, ...dataToInsert];
-
-      return {
-        data: dataToInsert,
-        error: null
-      };
-    },
-    delete: () => {
-      return {
-        eq: (column, value) => {
-          const itemsToDelete = query.filter(item => item[column] && item[column].toString() === value.toString());
-          query = query.filter(item => !(item[column] && item[column].toString() === value.toString()));
-
-          return {
-            data: itemsToDelete,
-            error: itemsToDelete.length ? null : new Error('Item not found')
-          };
-        }
-      };
+    auth: {
+      signUp: jest.fn(),
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+      session: jest.fn().mockReturnValue(null)
     }
   };
-
-  function handleResult() {
-    // Apply all conditions
-    Object.keys(conditions).forEach(column => {
-      const value = conditions[column];
-      
-      if (value === null) {
-        query = query.filter(item => item[column] === null);
-      } else {
-        query = query.filter(item => item[column] && item[column].toString() === value.toString());
-      }
-    });
-
-    if (singleResult) {
-      return {
-        data: query.length ? query[0] : null,
-        error: query.length ? null : new Error('Item not found')
-      };
-    }
-
-    return {
-      data: query,
-      error: null
-    };
-  }
-};
-
-// Mock the createClient function
-const createClient = jest.fn().mockImplementation(() => ({
-  from: mockFrom,
-  storage: {
-    from: () => ({
-      upload: jest.fn().mockResolvedValue({ data: { path: 'test-path' } }),
-      getPublicUrl: jest.fn().mockReturnValue({ publicURL: 'https://example.com/test-path' })
-    })
-  },
-  auth: {
-    signUp: jest.fn(),
-    signIn: jest.fn(),
-    signOut: jest.fn(),
-    session: jest.fn().mockReturnValue(null)
-  }
-}));
+});
 
 module.exports = {
-  createClient,
+  createClient
 };

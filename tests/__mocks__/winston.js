@@ -1,20 +1,31 @@
 const noop = () => {};
 
+// Improved mock with console fallbacks for better debugging
+const mockLogger = {
+  info: jest.fn((msg, meta) => console.log(`[MOCK INFO] ${msg}`, meta || '')),
+  warn: jest.fn((msg, meta) => console.log(`[MOCK WARN] ${msg}`, meta || '')),
+  error: jest.fn((msg, meta) => console.log(`[MOCK ERROR] ${msg}`, meta || '')),
+  debug: jest.fn((msg, meta) => console.log(`[MOCK DEBUG] ${msg}`, meta || '')),
+  log: jest.fn((level, msg, meta) => console.log(`[MOCK ${level}] ${msg}`, meta || '')),
+  add: jest.fn(),
+  child: jest.fn(() => mockLogger)
+};
+
 function createFakeTransport() {
   return {
     log: noop,
   };
 }
 
+// Cache the loggers we create so we always return the same logger for the same name
+const loggers = {};
+
 module.exports = {
-  createLogger: () => ({
-    info: noop,
-    warn: noop,
-    error: noop,
-    debug: noop,
-    log: noop,
-    add: noop,
-    child: () => ({ info: noop, warn: noop, error: noop, debug: noop, log: noop }),
+  createLogger: jest.fn((name) => {
+    if (!loggers[name]) {
+      loggers[name] = { ...mockLogger };
+    }
+    return loggers[name];
   }),
   addColors: noop,
   format: {
