@@ -16,7 +16,7 @@ const {
 const jwt = require('jsonwebtoken');
 const { AppError } = require('../../utils/error-handler');
 const request = require('supertest');
-const app = require('../../index');
+const app = require('./mock-security-app');
 
 describe('JWT Authentication Tests', () => {
     

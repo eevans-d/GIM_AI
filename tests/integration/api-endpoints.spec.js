@@ -6,7 +6,7 @@
 
 const request = require('supertest');
 const { createClient } = require('@supabase/supabase-js');
-const app = require('../../index');
+const app = require('./mock-app'); // Usar mock app en lugar de index.js
 
 const supabase = createClient(
     process.env.SUPABASE_URL,

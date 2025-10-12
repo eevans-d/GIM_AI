@@ -4,15 +4,15 @@
  */
 
 const request = require('supertest');
-const app = require('../../index');
-const Redis = require('redis');
+const app = require('./mock-security-app');
+const Redis = require('ioredis'); // Use IORedis (mocked)
 
 describe('Rate Limiting Tests', () => {
     
     let redisClient;
     
     beforeAll(async () => {
-        // Connect to test Redis
+        // Connect to test Redis (mocked)
         redisClient = Redis.createClient({
             host: process.env.REDIS_HOST || 'localhost',
             port: process.env.REDIS_PORT || 6379

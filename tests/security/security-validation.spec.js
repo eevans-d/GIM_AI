@@ -3,6 +3,7 @@
  * Tests para validación de inputs, prevención de XSS, SQL injection, etc.
  */
 
+const Joi = require('joi');
 const {
     validateSchema,
     sanitizeString,
@@ -289,7 +290,8 @@ describe('Security Validation Tests', () => {
             const phone = '5491112345678';
             const validated = validatePhone(phone);
             
-            expect(validated).toStartWith('+');
+            expect(validated).toMatch(/^\+/);
+            expect(validated.startsWith('+')).toBe(true);
         });
         
         test('Should remove spaces and dashes', () => {
