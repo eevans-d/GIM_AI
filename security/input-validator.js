@@ -283,6 +283,48 @@ function validateEmail(email) {
 }
 
 /**
+ * Valida y sanitiza una URL
+ * @param {String} url - URL a validar
+ * @param {Object} options - Opciones de validación
+ * @returns {String} URL validada
+ * @throws {AppError} Si la URL es inválida o peligrosa
+ */
+function validateUrl(url, options = {}) {
+    if (!url || typeof url !== 'string') {
+        throw new AppError('Invalid URL', ErrorTypes.VALIDATION_ERROR, 400);
+    }
+    
+    const cleaned = url.trim();
+    
+    // Check for dangerous protocols
+    const dangerousProtocols = ['javascript:', 'data:', 'file:', 'vbscript:'];
+    const lowerUrl = cleaned.toLowerCase();
+    
+    for (const protocol of dangerousProtocols) {
+        if (lowerUrl.startsWith(protocol)) {
+            throw new AppError(`Protocol ${protocol} is not allowed`, ErrorTypes.VALIDATION_ERROR, 400);
+        }
+    }
+    
+    // Require HTTPS by default (can be overridden)
+    const requireHttps = options.requireHttps !== false;
+    if (requireHttps && !lowerUrl.startsWith('https://')) {
+        throw new AppError('Only HTTPS URLs are allowed', ErrorTypes.VALIDATION_ERROR, 400);
+    }
+    
+    // Validate URL format using validator.js
+    if (!validator.isURL(cleaned, {
+        protocols: options.protocols || ['https', 'http'],
+        require_protocol: true,
+        require_valid_protocol: true
+    })) {
+        throw new AppError('Invalid URL format', ErrorTypes.VALIDATION_ERROR, 400);
+    }
+    
+    return cleaned;
+}
+
+/**
  * Valida un UUID
  * @param {String} uuid - UUID a validar
  * @returns {String} UUID validado
@@ -480,6 +522,7 @@ module.exports = {
     sanitizeObject,
     validatePhone,
     validateEmail,
+    validateUrl,
     validateUUID,
     validateDate,
     validateQRCode,
