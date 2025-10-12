@@ -315,12 +315,10 @@ class GeminiService {
     try {
       const client = await getRedisClient();
       const keys = await client.keys(pattern);
-      
       if (keys.length > 0) {
         await client.del(keys);
         logger.info('Cache cleared', { pattern, count: keys.length });
       }
-      
       return keys.length;
     } catch (error) {
       logger.error('Failed to clear cache', { pattern, error });

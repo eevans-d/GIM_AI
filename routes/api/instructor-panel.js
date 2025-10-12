@@ -6,9 +6,9 @@
 
 const express = require('express');
 const router = express.Router();
-const instructorPanelService = require('../services/instructor-panel-service');
-const { AppError, ErrorTypes } = require('../utils/error-handler');
-const logger = require('../utils/logger').createLogger('instructor-panel-routes');
+const instructorPanelService = require('../../services/instructor-panel-service');
+const { AppError, ErrorTypes } = require('../../utils/error-handler');
+const logger = require('../../utils/logger').createLogger('instructor-panel-routes');
 
 // =============================================
 // GESTIÓN DE SESIONES

@@ -6,8 +6,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
-const { AppError, ErrorTypes } = require('../utils/error-handler');
-const log = require('../utils/logger').createLogger('jwt-auth');
+const { AppError, ErrorTypes } = require('../../utils/error-handler');
+const log = require('../../utils/logger').createLogger('jwt-auth');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
