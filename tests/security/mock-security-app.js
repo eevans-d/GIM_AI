@@ -239,7 +239,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const jwt = require('jsonwebtoken');
+    const jwt = jest.requireActual('jsonwebtoken');
     const user = jwt.verify(token, process.env.JWT_SECRET);
     req.user = user;
     next();
@@ -366,12 +366,8 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Email and password required' });
   }
 
-  // Mock authentication
-  const bcrypt = require('bcrypt');
-  const jwt = require('jsonwebtoken');
-  
-  // For testing: any email with password "Test123!@#" is valid
-  // In production, would query Supabase
+  // For testing: hardcoded test credentials
+  // In production, would query Supabase and verify hashed password
   const testCredentials = [
     { email: 'test@example.com', password: 'Test123!@#', role: 'member' },
     { email: 'admin@example.com', password: 'Admin123!@#', role: 'admin' },
@@ -384,11 +380,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
 
-  // For testing, check password directly (in real world would be hashed)
+  // Check password directly (in real world would be hashed)
   if (password !== user.password) {
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
 
+  // Generate tokens using real JWT library
+  const jwt = jest.requireActual('jsonwebtoken');
+  
   // Generate tokens
   const userId = `user-${email.split('@')[0]}-${Date.now()}`;
   const accessToken = jwt.sign(
@@ -420,7 +419,7 @@ app.post('/api/auth/refresh', (req, res) => {
   }
 
   try {
-    const jwt = require('jsonwebtoken');
+    const jwt = jest.requireActual('jsonwebtoken');
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     
     if (payload.type !== 'refresh') {
@@ -454,13 +453,9 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Old and new passwords required' });
   }
 
-  const bcrypt = require('bcrypt');
-  
-  // Mock stored password
-  const storedPassword = await bcrypt.hash('OldPass123!', 10);
-  
-  const passwordMatch = await bcrypt.compare(oldPassword, storedPassword);
-  if (!passwordMatch) {
+  // For testing, just check if oldPassword matches expected value
+  // In production, would compare with hashed password from database
+  if (oldPassword !== 'OldPass123!') {
     return res.status(401).json({ success: false, error: 'Incorrect old password' });
   }
 
@@ -497,10 +492,9 @@ app.post('/api/auth/register', async (req, res) => {
         error: 'Password must contain uppercase, lowercase, number and special character' 
       });
     }
-
-    const bcrypt = require('bcrypt');
-    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS) || 10);
     
+    // For testing, just return success without actually hashing
+    // In production, would hash password with bcrypt and store in Supabase
     res.status(201).json({
       success: true,
       user: { email, nombre, apellido, telefono },
@@ -596,6 +590,54 @@ app.get('/api/instructor-panel/sessions', instructorLimiter, (req, res) => {
       { id: '1', name: 'Morning Spinning', time: '08:00', enrolled: 25 },
       { id: '2', name: 'Evening Yoga', time: '18:00', enrolled: 18 }
     ]
+  });
+});
+
+// ========================================================================
+// ADDITIONAL ENDPOINTS FOR JWT TESTING
+// ========================================================================
+
+// User profile endpoint (requires authentication)
+app.get('/api/profile', authenticateToken, (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      user_id: req.user.user_id,
+      email: req.user.email,
+      role: req.user.role,
+      profile: {
+        nombre: 'Test User',
+        apellido: 'Member',
+        telefono: '+12025551234',
+        created_at: new Date().toISOString()
+      }
+    }
+  });
+});
+
+// Admin stats endpoint (admin only)
+app.get('/api/admin/stats', authenticateToken, authorizeRole('admin'), (req, res) => {
+  res.json({
+    success: true,
+    stats: {
+      total_members: 350,
+      total_classes: 45,
+      total_revenue: 125000,
+      active_subscriptions: 280
+    }
+  });
+});
+
+// Staff reports endpoint (staff + admin)
+app.get('/api/staff/reports', authenticateToken, authorizeRole('staff', 'admin'), (req, res) => {
+  res.json({
+    success: true,
+    reports: {
+      daily_checkins: 145,
+      member_satisfaction: 4.2,
+      class_occupancy: 82,
+      revenue_today: 5600
+    }
   });
 });
 

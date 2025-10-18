@@ -4,7 +4,8 @@
  * Using HTTP endpoints instead of direct function calls
  */
 
-const jwt = require('jsonwebtoken');
+// Import JWT library without mocking
+const jwt = jest.requireActual('jsonwebtoken');
 const request = require('supertest');
 const app = require('./mock-security-app');
 
@@ -91,7 +92,8 @@ describe('JWT Authentication Tests', () => {
                 { expiresIn: '15m' }
             );
             
-            const decoded = jwt.decode(testToken);
+            // Decode without verification (ignores expiry)
+            const decoded = jwt.decode(testToken, { complete: false });
             expect(decoded).toBeDefined();
             expect(decoded).toHaveProperty('user_id', 'user-test-123');
             expect(decoded).toHaveProperty('email', 'test@example.com');
@@ -166,6 +168,8 @@ describe('JWT Authentication Tests', () => {
             
             expect(response.body).toHaveProperty('success', true);
             expect(response.body).toHaveProperty('user');
+            expect(response.body.user).toHaveProperty('user_id');
+            expect(response.body.user).toHaveProperty('email');
         });
         
         test('Should reject request without token', async () => {
@@ -202,22 +206,17 @@ describe('JWT Authentication Tests', () => {
     // ========================================================================
     
     describe('Token Refresh', () => {
-        let refreshToken;
-        
-        beforeAll(() => {
-            // Create a valid refresh token for testing
-            refreshToken = jwt.sign(
+        test('Should refresh access token with valid refresh token', async () => {
+            const refreshToken = jwt.sign(
                 { user_id: 'user-test-123', type: 'refresh' },
                 process.env.JWT_REFRESH_SECRET,
                 { expiresIn: '7d' }
             );
-        });
-        
-        test('Should refresh access token with valid refresh token', async () => {
+            
             const response = await request(app)
                 .post('/api/auth/refresh')
                 .set('Content-Type', 'application/json')
-                .send({ refreshToken: refreshToken })
+                .send({ refreshToken })
                 .expect(200);
             
             expect(response.body).toHaveProperty('success', true);
@@ -287,18 +286,13 @@ describe('JWT Authentication Tests', () => {
     // ========================================================================
     
     describe('Password Management', () => {
-        let authToken;
-        
-        beforeAll(() => {
-            // Create a valid test token
-            authToken = jwt.sign(
+        test('Should change password successfully', async () => {
+            const authToken = jwt.sign(
                 { user_id: 'user-test-123', email: 'test@example.com', role: 'member' },
                 process.env.JWT_SECRET,
                 { expiresIn: '15m' }
             );
-        });
-        
-        test('Should change password successfully', async () => {
+            
             const response = await request(app)
                 .post('/api/auth/change-password')
                 .set('Authorization', `Bearer ${authToken}`)
@@ -314,6 +308,12 @@ describe('JWT Authentication Tests', () => {
         });
         
         test('Should reject change password without old password', async () => {
+            const authToken = jwt.sign(
+                { user_id: 'user-test-123', email: 'test@example.com', role: 'member' },
+                process.env.JWT_SECRET,
+                { expiresIn: '15m' }
+            );
+            
             const response = await request(app)
                 .post('/api/auth/change-password')
                 .set('Authorization', `Bearer ${authToken}`)
@@ -327,6 +327,12 @@ describe('JWT Authentication Tests', () => {
         });
         
         test('Should reject incorrect old password', async () => {
+            const authToken = jwt.sign(
+                { user_id: 'user-test-123', email: 'test@example.com', role: 'member' },
+                process.env.JWT_SECRET,
+                { expiresIn: '15m' }
+            );
+            
             const response = await request(app)
                 .post('/api/auth/change-password')
                 .set('Authorization', `Bearer ${authToken}`)
@@ -360,32 +366,13 @@ describe('JWT Authentication Tests', () => {
     // ========================================================================
     
     describe('Role-Based Access Control', () => {
-        let memberToken;
-        let staffToken;
-        let adminToken;
-        
-        beforeAll(() => {
-            // Create tokens for different roles
-            memberToken = jwt.sign(
+        test('Should allow access to user endpoints with valid token', async () => {
+            const memberToken = jwt.sign(
                 { user_id: 'user-member-123', email: 'member@example.com', role: 'member' },
                 process.env.JWT_SECRET,
                 { expiresIn: '15m' }
             );
             
-            staffToken = jwt.sign(
-                { user_id: 'user-staff-123', email: 'staff@example.com', role: 'staff' },
-                process.env.JWT_SECRET,
-                { expiresIn: '15m' }
-            );
-            
-            adminToken = jwt.sign(
-                { user_id: 'user-admin-123', email: 'admin@example.com', role: 'admin' },
-                process.env.JWT_SECRET,
-                { expiresIn: '15m' }
-            );
-        });
-        
-        test('Should allow access to user endpoints with valid token', async () => {
             const response = await request(app)
                 .get('/api/test/auth-required')
                 .set('Authorization', `Bearer ${memberToken}`)
@@ -395,6 +382,12 @@ describe('JWT Authentication Tests', () => {
         });
         
         test('Should allow staff to access staff-only endpoints', async () => {
+            const staffToken = jwt.sign(
+                { user_id: 'user-staff-123', email: 'staff@example.com', role: 'staff' },
+                process.env.JWT_SECRET,
+                { expiresIn: '15m' }
+            );
+            
             const response = await request(app)
                 .get('/api/test/staff-only')
                 .set('Authorization', `Bearer ${staffToken}`)
@@ -404,6 +397,12 @@ describe('JWT Authentication Tests', () => {
         });
         
         test('Should block unauthorized access to admin endpoints', async () => {
+            const memberToken = jwt.sign(
+                { user_id: 'user-member-123', email: 'member@example.com', role: 'member' },
+                process.env.JWT_SECRET,
+                { expiresIn: '15m' }
+            );
+            
             const response = await request(app)
                 .get('/api/test/admin-only')
                 .set('Authorization', `Bearer ${memberToken}`)

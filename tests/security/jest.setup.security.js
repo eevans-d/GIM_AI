@@ -8,8 +8,9 @@ jest.mock('@supabase/supabase-js');
 jest.mock('ioredis');
 jest.mock('bull');
 jest.mock('axios');
-jest.mock('jsonwebtoken');
-jest.mock('bcrypt');
+// DO NOT MOCK jsonwebtoken and bcrypt - we need real operations for auth tests
+// jest.mock('jsonwebtoken');
+// jest.mock('bcrypt');
 
 // Setup environment variables for testing
 process.env.NODE_ENV = 'test';
