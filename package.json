@@ -19,6 +19,8 @@
     "test:queue": "jest tests/integration/queue-worker.spec.js --runInBand",
     "test:whatsapp": "jest tests/integration/whatsapp-mocked.spec.js",
     "test:performance": "artillery run tests/performance/artillery-config.yml --output tests/performance/artillery-report.json",
+    "perf:test": "bash performance/run-performance-tests.sh",
+    "perf:report": "open performance/reports/gim-ai-full-scenario-*.html || ls -lah performance/reports/",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:security && npm run test:e2e",
     "validate:prompt19": "bash scripts/validate-prompt-19.sh",
     "security:audit": "npm audit --production",
@@ -74,7 +76,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.0",
     "@types/jest": "^29.5.8",
-    "artillery": "^2.0.21",
+    "artillery": "^2.0.26",
     "babel-jest": "^29.7.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",

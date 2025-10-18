@@ -1,0 +1,144 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    # WARM-UP: Establecer conexiones base (1 minuto, ramp-up gradual)
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm-up Phase"
+    
+    # RAMP-UP: Aumentar carga gradualmente (2 minutos, 5 req/sec)
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 15
+      name: "Ramp-up Phase"
+    
+    # SUSTAINED: Carga constante (3 minutos, 15 req/sec)
+    - duration: 180
+      arrivalRate: 15
+      name: "Sustained Phase"
+    
+    # SPIKE: Pico súbito (1 minuto, 50 req/sec - simular tráfico inesperado)
+    - duration: 60
+      arrivalRate: 50
+      name: "Spike Phase"
+    
+    # COOL-DOWN: Reducir gradualmente (2 minutos)
+    - duration: 120
+      arrivalRate: 15
+      rampTo: 1
+      name: "Cool-down Phase"
+
+  processor: "./performance/processor.js"
+  variables:
+    member_id: "member-test-123"
+    class_id: "class-test-456"
+    phone: "5551234567"
+    qr_code: "GIM-QR-12345678"
+  payload:
+    path: "./performance/payload.csv"
+    skipHeader: true
+
+  settings:
+    timeout: 10
+    http:
+      timeout: 10
+    cors: true
+    includeResponseHeaders: true
+    includeResponseBodies: urlOnly
+
+  defaults:
+    headers:
+      User-Agent: "Artillery Performance Test"
+      X-Test-Run: "true"
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Rate Limit Validation (2 msg/day limit)"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/whatsapp/send-message"
+          json:
+            phone: "{{ phone }}"
+            template: "checkin_confirmation"
+            language: "es"
+          expect:
+            - statusCode: [200, 429]
+          think: 2
+      - post:
+          url: "/api/whatsapp/send-message"
+          json:
+            phone: "{{ phone }}"
+            template: "reminder_workout"
+            language: "es"
+          expect:
+            - statusCode: [200, 429]
+          think: 1
+
+  - name: "Check-in QR Flow (API rate limit 10/day)"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/checkin/qr"
+          json:
+            qr_code: "{{ qr_code }}"
+            member_id: "{{ member_id }}"
+            class_id: "{{ class_id }}"
+          expect:
+            - statusCode: [200, 429, 400]
+          capture:
+            - json: "$.checkin_id"
+              as: "checkin_id"
+          think: 3
+      - get:
+          url: "/api/checkin/status/{{ checkin_id }}"
+          expect:
+            - statusCode: [200, 404, 429]
+          think: 2
+
+  - name: "Survey Response Collection (5/day limit)"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/survey/submit"
+          json:
+            member_id: "{{ member_id }}"
+            class_id: "{{ class_id }}"
+            rating: "{{ $randomNumber(1, 5) }}"
+            comments: "Great workout!"
+          expect:
+            - statusCode: [200, 201, 429, 400]
+          think: 2
+      - get:
+          url: "/api/survey/results/{{ class_id }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Authentication & JWT Flow"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@gym.com"
+            password: "password123"
+          expect:
+            - statusCode: [200, 401, 429]
+          capture:
+            - json: "$.token"
+              as: "access_token"
+          think: 1
+      - get:
+          url: "/api/profile"
+          headers:
+            Authorization: "Bearer {{ access_token }}"
+          expect:
+            - statusCode: [200, 401, 403]
+          think: 2
+      - post:
+          url: "/api/auth/refresh"
+          json:
+            refresh_token: "{{ access_token }}"
+          expect:
+            - statusCode: [200, 401, 429]
+          think: 1
