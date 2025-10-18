@@ -26,6 +26,7 @@
     "test:playwright:report": "playwright show-report",
     "perf:test": "bash performance/run-performance-tests.sh",
     "perf:report": "open performance/reports/gim-ai-full-scenario-*.html || ls -lah performance/reports/",
+    "perf:analyze": "node performance/analyze-results.js performance/artillery-report.json",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:security && npm run test:playwright",
     "validate:prompt19": "bash scripts/validate-prompt-19.sh",
     "security:audit": "npm audit --production",
