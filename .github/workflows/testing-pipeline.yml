@@ -1,0 +1,462 @@
+name: 🧪 Comprehensive Testing Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - ci/jest-esm-support
+  pull_request:
+    branches:
+      - main
+      - ci/jest-esm-support
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  # Job 1: Code Quality & Linting
+  lint:
+    name: 📝 Lint & Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Prettier check
+        run: npx prettier --check .
+
+  # Job 2: Unit Tests
+  unit-tests:
+    name: 🟦 Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage
+
+      - name: Upload unit test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unit
+          name: unit-coverage
+          fail_ci_if_error: false
+
+  # Job 3: Integration Tests
+  integration-tests:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: gim_ai_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test123
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup database
+        run: npm run migrate
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY_TEST }}
+          DATABASE_URL: postgresql://test:test123@localhost:5432/gim_ai_test
+
+      - name: Run integration tests
+        run: npm run test:integration -- --coverage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY_TEST }}
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Upload integration coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/integration/lcov.info
+          flags: integration
+          name: integration-coverage
+          fail_ci_if_error: false
+
+  # Job 4: E2E Tests
+  e2e-tests:
+    name: 🎭 End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start application
+        run: npm start &
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/health 2>/dev/null; then
+              echo "Application is ready"
+              exit 0
+            fi
+            echo "Waiting for application... ($i/30)"
+            sleep 2
+          done
+          echo "Application failed to start"
+          exit 1
+
+      - name: Run E2E tests
+        run: npm test:playwright -- --reporter=html
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Job 5: Visual Regression Tests
+  visual-regression:
+    name: 🖼️ Visual Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        uses: microsoft/playwright-github-action@v1
+        with:
+          browsers: chromium firefox webkit
+
+      - name: Start application
+        run: npm start &
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/health 2>/dev/null; then
+              echo "Application is ready"
+              exit 0
+            fi
+            echo "Waiting for application... ($i/30)"
+            sleep 2
+          done
+          exit 1
+
+      - name: Run visual regression tests
+        run: npm test:playwright -- --grep "VISUAL REGRESSION" --reporter=json
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: Upload visual regression artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: visual-regression-report
+          path: |
+            tests/e2e/__screenshots__/
+            playwright-report/
+          retention-days: 30
+
+  # Job 6: Security Tests
+  security-tests:
+    name: 🔒 Security Tests (OWASP)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: gim_ai_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test123
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security tests
+        run: npm test -- tests/security/security-owasp-top-10.spec.js --coverage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY_TEST }}
+          DATABASE_URL: postgresql://test:test123@localhost:5432/gim_ai_test
+          NODE_ENV: test
+
+      - name: Run npm audit for vulnerabilities
+        run: npm audit --audit-level=moderate --production
+        continue-on-error: true
+
+      - name: Upload security test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: security
+          name: security-coverage
+          fail_ci_if_error: false
+
+  # Job 7: Performance Tests
+  performance-tests:
+    name: ⚡ Performance & Load Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: npm start &
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/health 2>/dev/null; then
+              echo "Application is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Run performance tests
+        run: npm run perf:test
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: Generate performance report
+        run: npm run perf:report
+        if: always()
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-report
+          path: performance-reports/
+          retention-days: 30
+
+      - name: Comment performance results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'performance-reports/summary.md';
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+  # Job 8: Test Summary & Reporting
+  test-summary:
+    name: 📊 Test Summary & Reporting
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - lint
+      - unit-tests
+      - integration-tests
+      - e2e-tests
+      - visual-regression
+      - security-tests
+      - performance-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate test summary
+        run: |
+          echo "# 🧪 Test Execution Summary" > TEST_SUMMARY.md
+          echo "" >> TEST_SUMMARY.md
+          echo "## ✅ Pipeline Status" >> TEST_SUMMARY.md
+          echo "- Lint: ${{ needs.lint.result }}" >> TEST_SUMMARY.md
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> TEST_SUMMARY.md
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> TEST_SUMMARY.md
+          echo "- E2E Tests: ${{ needs.e2e-tests.result }}" >> TEST_SUMMARY.md
+          echo "- Visual Regression: ${{ needs.visual-regression.result }}" >> TEST_SUMMARY.md
+          echo "- Security Tests: ${{ needs.security-tests.result }}" >> TEST_SUMMARY.md
+          echo "- Performance Tests: ${{ needs.performance-tests.result }}" >> TEST_SUMMARY.md
+          echo "" >> TEST_SUMMARY.md
+          echo "## 📈 Coverage Reports" >> TEST_SUMMARY.md
+          echo "Coverage reports available in artifacts" >> TEST_SUMMARY.md
+          echo "" >> TEST_SUMMARY.md
+          echo "**Run ID:** ${{ github.run_id }}" >> TEST_SUMMARY.md
+          echo "**Commit:** ${{ github.sha }}" >> TEST_SUMMARY.md
+          cat TEST_SUMMARY.md
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: TEST_SUMMARY.md
+
+      - name: Comment summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('TEST_SUMMARY.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Determine workflow status
+        run: |
+          if [ "${{ needs.lint.result }}" = "failure" ] || \
+             [ "${{ needs.unit-tests.result }}" = "failure" ] || \
+             [ "${{ needs.integration-tests.result }}" = "failure" ] || \
+             [ "${{ needs.security-tests.result }}" = "failure" ]; then
+            echo "❌ Pipeline failed due to test failures"
+            exit 1
+          else
+            echo "✅ Pipeline completed successfully"
+            exit 0
+          fi
+
+  # Optional: Continuous Deployment (commented out)
+  # deploy:
+  #   name: 🚀 Deploy
+  #   runs-on: ubuntu-latest
+  #   needs: test-summary
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   steps:
+  #     - name: Deploy to production
+  #       run: echo "Deploy steps here"
