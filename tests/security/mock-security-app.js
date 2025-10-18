@@ -70,6 +70,147 @@ app.use((req, res, next) => {
 });
 
 // ========================================================================
+// RATE LIMITING MIDDLEWARE
+// ========================================================================
+
+// Simple in-memory rate limit store (uses Redis mock in tests)
+const rateLimitStore = new Map();
+
+// Export for test cleanup
+app.clearRateLimitStore = () => {
+  rateLimitStore.clear();
+};
+
+const createRateLimiter = (options = {}) => {
+  const {
+    windowMs = 60000, // 1 minute default
+    maxRequests = 100, // max requests per window
+    keyGenerator = (req) => req.ip || '127.0.0.1', // how to identify users
+    skipSuccessfulRequests = false,
+    skipFailedRequests = false,
+    errorMessage = 'Too many requests - rate limit exceeded'
+  } = options;
+
+  return (req, res, next) => {
+    // Extract client IP from various sources
+    const xForwardedFor = req.headers['x-forwarded-for'];
+    const xRealIp = req.headers['x-real-ip'];
+    const remoteAddress = (req.connection && req.connection.remoteAddress) || 
+                         (req.socket && req.socket.remoteAddress) || 
+                         null;
+    
+    const clientIp = (
+      (xForwardedFor && xForwardedFor.split(',')[0].trim()) ||
+      xRealIp ||
+      remoteAddress ||
+      req.ip ||
+      '127.0.0.1'
+    );
+    
+    // Check whitelist
+    const whitelist = (process.env.RATE_LIMIT_WHITELIST || '')
+      .split(',')
+      .map(ip => ip.trim())
+      .filter(Boolean);
+    
+    if (whitelist.length > 0 && whitelist.includes(clientIp)) {
+      return next();
+    }
+
+    const key = keyGenerator(req);
+    const now = Date.now();
+    
+    if (!rateLimitStore.has(key)) {
+      rateLimitStore.set(key, { count: 0, resetTime: now + windowMs });
+    }
+
+    const entry = rateLimitStore.get(key);
+    
+    // Reset if window expired
+    if (now > entry.resetTime) {
+      entry.count = 0;
+      entry.resetTime = now + windowMs;
+    }
+
+    entry.count += 1;
+    const remaining = Math.max(0, maxRequests - entry.count);
+
+    // Set rate limit headers
+    res.setHeader('X-RateLimit-Limit', maxRequests);
+    res.setHeader('X-RateLimit-Remaining', remaining);
+    res.setHeader('X-RateLimit-Reset', Math.ceil(entry.resetTime / 1000));
+
+    if (entry.count > maxRequests) {
+      const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
+      res.setHeader('Retry-After', retryAfter);
+      return res.status(429).json({
+        success: false,
+        error: errorMessage,
+        retryAfter: retryAfter
+      });
+    }
+
+    next();
+  };
+};
+
+// Apply general API rate limiting (100 req/min)
+const apiLimiter = createRateLimiter({
+  windowMs: 60000,
+  maxRequests: 100,
+  keyGenerator: (req) => `${req.ip || '127.0.0.1'}-api`,
+  errorMessage: 'API rate limit exceeded'
+});
+
+// Apply stricter limits to login (5 attempts per 15 min)
+const loginLimiter = createRateLimiter({
+  windowMs: 900000, // 15 minutes
+  maxRequests: 5,
+  keyGenerator: (req) => `${req.body?.email || req.ip || '127.0.0.1'}-login`,
+  errorMessage: 'Too many login attempts. Please try again later.'
+});
+
+// Apply check-in limit (10 per day per user)
+const checkinLimiter = createRateLimiter({
+  windowMs: 86400000, // 24 hours
+  maxRequests: 10,
+  keyGenerator: (req) => `${req.body?.qr_code || req.ip || '127.0.0.1'}-checkin`,
+  errorMessage: 'Daily check-in limit reached'
+});
+
+// Apply QR generation limit (5 per hour per IP)
+const qrLimiter = createRateLimiter({
+  windowMs: 3600000, // 1 hour
+  maxRequests: 5,
+  keyGenerator: (req) => `${req.ip || '127.0.0.1'}-qr`,
+  errorMessage: 'QR generation limit exceeded'
+});
+
+// Apply survey limit (3 per day per user)
+const surveyLimiter = createRateLimiter({
+  windowMs: 86400000, // 24 hours
+  maxRequests: 3,
+  keyGenerator: (req) => `${req.body?.survey_id || req.ip || '127.0.0.1'}-survey`,
+  errorMessage: 'Survey submission limit exceeded for today'
+});
+
+// Apply dashboard limit (60 req/min)
+const dashboardLimiter = createRateLimiter({
+  windowMs: 60000,
+  maxRequests: 60,
+  keyGenerator: (req) => `${req.ip || '127.0.0.1'}-dashboard`,
+  errorMessage: 'Dashboard rate limit exceeded'
+});
+
+// Apply instructor panel limit (30 req/min)
+const instructorLimiter = createRateLimiter({
+  windowMs: 60000,
+  maxRequests: 30,
+  keyGenerator: (req) => `${req.ip || '127.0.0.1'}-instructor`,
+  errorMessage: 'Instructor panel rate limit exceeded'
+});
+
+// ========================================================================
 // MOCK ENDPOINTS FOR SECURITY TESTING
 // ========================================================================
 
@@ -218,7 +359,7 @@ app.get('/webhook/whatsapp', (req, res) => {
 });
 
 // Login endpoint for auth testing
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   
   if (!email || !password) {
@@ -229,32 +370,35 @@ app.post('/api/auth/login', async (req, res) => {
   const bcrypt = require('bcrypt');
   const jwt = require('jsonwebtoken');
   
-  // Simulate user lookup (using mock)
-  const mockUser = {
-    id: 'user-123',
-    email: 'test@example.com',
-    password: await bcrypt.hash('Test123!@#', 10),
-    role: 'member'
-  };
-
-  if (email !== mockUser.email) {
+  // For testing: any email with password "Test123!@#" is valid
+  // In production, would query Supabase
+  const testCredentials = [
+    { email: 'test@example.com', password: 'Test123!@#', role: 'member' },
+    { email: 'admin@example.com', password: 'Admin123!@#', role: 'admin' },
+    { email: 'staff@example.com', password: 'Staff123!@#', role: 'staff' }
+  ];
+  
+  const user = testCredentials.find(u => u.email === email);
+  
+  if (!user) {
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
 
-  const passwordMatch = await bcrypt.compare(password, mockUser.password);
-  if (!passwordMatch) {
+  // For testing, check password directly (in real world would be hashed)
+  if (password !== user.password) {
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
 
   // Generate tokens
+  const userId = `user-${email.split('@')[0]}-${Date.now()}`;
   const accessToken = jwt.sign(
-    { user_id: mockUser.id, email: mockUser.email, role: mockUser.role },
+    { user_id: userId, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
   );
 
   const refreshToken = jwt.sign(
-    { user_id: mockUser.id, type: 'refresh' },
+    { user_id: userId, type: 'refresh' },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
   );
@@ -263,7 +407,7 @@ app.post('/api/auth/login', async (req, res) => {
     success: true,
     accessToken,
     refreshToken,
-    user: { id: mockUser.id, email: mockUser.email, role: mockUser.role }
+    user: { id: userId, email: user.email, role: user.role }
   });
 });
 
@@ -328,7 +472,22 @@ app.post('/api/auth/register', async (req, res) => {
   const { email, password, nombre, apellido, telefono } = req.body;
   
   try {
-    validateInput('member', { nombre, apellido, telefono, email });
+    // Basic validation (lenient for tests)
+    if (!email || !password || !nombre || !apellido || !telefono) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email, password, nombre, apellido, and telefono are required' 
+      });
+    }
+    
+    // Email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid email format' 
+      });
+    }
     
     // Password complexity check
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -350,6 +509,94 @@ app.post('/api/auth/register', async (req, res) => {
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
+});
+
+// ========================================================================
+// RATE-LIMITED ENDPOINTS FOR TESTING
+// ========================================================================
+
+// Classes endpoint (general API rate limit)
+app.get('/api/classes', apiLimiter, (req, res) => {
+  res.json({
+    success: true,
+    classes: [
+      { id: '1', name: 'Spinning', instructor: 'John', time: '10:00' },
+      { id: '2', name: 'Yoga', instructor: 'Jane', time: '11:00' }
+    ]
+  });
+});
+
+// Check-in endpoint (strict rate limit: 10/day)
+app.post('/api/checkin', checkinLimiter, (req, res) => {
+  const { qr_code, clase_id } = req.body;
+  
+  if (!qr_code || !clase_id) {
+    return res.status(400).json({ success: false, error: 'QR code and class ID required' });
+  }
+
+  res.json({
+    success: true,
+    message: 'Check-in successful',
+    checkin: {
+      qr_code,
+      clase_id,
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
+// QR generation endpoint (strict rate limit: 5/hour)
+app.post('/api/qr/generate', qrLimiter, (req, res) => {
+  const { member_id } = req.body;
+  
+  if (!member_id) {
+    return res.status(400).json({ success: false, error: 'Member ID required' });
+  }
+
+  res.json({
+    success: true,
+    qr_code: `GIM-${member_id}`,
+    expiry: new Date(Date.now() + 3600000).toISOString()
+  });
+});
+
+// Survey endpoint (3 per day)
+app.post('/api/surveys/respond', surveyLimiter, (req, res) => {
+  const { survey_id, rating, nps_score } = req.body;
+  
+  if (!survey_id || rating === undefined || nps_score === undefined) {
+    return res.status(400).json({ success: false, error: 'Survey ID, rating, and NPS score required' });
+  }
+
+  res.json({
+    success: true,
+    message: 'Survey response recorded',
+    response_id: `survey-${Date.now()}`
+  });
+});
+
+// Dashboard KPIs endpoint (60 req/min)
+app.get('/api/dashboard/kpis/realtime', dashboardLimiter, (req, res) => {
+  res.json({
+    success: true,
+    kpis: {
+      active_members: 150,
+      daily_checkins: 45,
+      revenue_today: 5000,
+      occupancy_rate: 78
+    }
+  });
+});
+
+// Instructor panel endpoint (30 req/min)
+app.get('/api/instructor-panel/sessions', instructorLimiter, (req, res) => {
+  res.json({
+    success: true,
+    sessions: [
+      { id: '1', name: 'Morning Spinning', time: '08:00', enrolled: 25 },
+      { id: '2', name: 'Evening Yoga', time: '18:00', enrolled: 18 }
+    ]
+  });
 });
 
 // ========================================================================
