@@ -27,6 +27,7 @@ module.exports = {
     }
     return loggers[name];
   }),
+  createMockLogger: jest.fn(() => ({ ...mockLogger })),
   addColors: noop,
   format: {
     combine: noop,
