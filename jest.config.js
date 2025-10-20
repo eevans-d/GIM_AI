@@ -3,6 +3,7 @@ const isCI = Boolean(process.env.CI);
 module.exports = {
   testEnvironment: 'node',
   coverageDirectory: 'coverage',
+  cacheDirectory: '.jest-cache',
   collectCoverageFrom: [
     '**/*.js',
     '!node_modules/**',

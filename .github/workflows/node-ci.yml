@@ -23,9 +23,21 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache Jest artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            .jest-cache
+            coverage
+            node_modules/.cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.test.js') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-jest-
+
       - name: Install dependencies
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          if [ -f package-lock.json ]; then npm ci --prefer-offline; else npm install; fi
 
       - name: Lint
         run: npm run -s lint || true
