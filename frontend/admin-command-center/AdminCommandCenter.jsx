@@ -44,12 +44,13 @@ export default function AdminCommandCenter() {
     try {
       setLoading(true);
       const response = await axios.get('/api/admin/metrics/dashboard');
-      setMetrics(response.data);
+      // Extract data from response (API returns { success, data, timestamp })
+      setMetrics(response.data.data || response.data);
       setError(null);
+      console.log('✅ Metrics loaded successfully', response.data.data);
     } catch (err) {
-      console.error('Failed to fetch metrics:', err);
+      console.error('❌ Failed to fetch metrics:', err);
       setError('Failed to load dashboard metrics');
-      setLoading(false);
     } finally {
       setLoading(false);
     }

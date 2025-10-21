@@ -17,11 +17,14 @@ export default function ClassManagement() {
 
   const fetchClasses = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/api/admin/classes/list');
-      setClasses(response.data);
-      setLoading(false);
+      // Extract data from API response { success, data, count, timestamp }
+      setClasses(response.data.data || []);
+      console.log('✅ Classes loaded:', response.data.count, 'classes');
     } catch (error) {
-      console.error('Failed to fetch classes:', error);
+      console.error('❌ Failed to fetch classes:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -64,9 +67,12 @@ export default function ClassManagement() {
           {classes.map(cls => (
             <tr key={cls.id}>
               <td>{cls.nombre}</td>
-              <td>{cls.instructor_nombre}</td>
-              <td>{cls.fecha_hora}</td>
-              <td>{cls.checkins_count}/{cls.capacidad_maxima}</td>
+              <td>{cls.instructor_id}</td>
+              <td>{cls.horario}</td>
+              <td>
+                {cls.currentOccupancy}/{cls.capacidad_maxima} 
+                ({cls.occupancyPercentage}%)
+              </td>
               <td>
                 <span className={`status ${cls.estado}`}>
                   {cls.estado === 'activo' ? '✅ Active' : '⏸️ Paused'}

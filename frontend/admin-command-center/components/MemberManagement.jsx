@@ -17,11 +17,14 @@ export default function MemberManagement() {
 
   const fetchMembers = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`/api/admin/members/list?filter=${filter}`);
-      setMembers(response.data);
-      setLoading(false);
+      // Extract data from API response { success, data, count, filter, timestamp }
+      setMembers(response.data.data || []);
+      console.log(`✅ Members loaded (${filter}):`, response.data.count);
     } catch (error) {
-      console.error('Failed to fetch members:', error);
+      console.error('❌ Failed to fetch members:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -79,16 +82,20 @@ export default function MemberManagement() {
             <tr key={member.id}>
               <td>{member.nombre}</td>
               <td>{member.telefono}</td>
-              <td>{new Date(member.fecha_adhesion).toLocaleDateString()}</td>
+              <td>{new Date(member.fecha_registro).toLocaleDateString()}</td>
               <td>
                 <span className={`status-badge ${member.estado}`}>
                   {member.estado}
                 </span>
               </td>
               <td className={member.deuda_actual > 0 ? 'debt' : ''}>
-                ${member.deuda_actual.toFixed(2)}
+                ${member.deuda_actual ? member.deuda_actual.toFixed(0) : '0'}
               </td>
-              <td>{member.ultimo_checkin ? new Date(member.ultimo_checkin).toLocaleDateString() : 'Never'}</td>
+              <td>
+                {member.fecha_ultimo_checkin 
+                  ? new Date(member.fecha_ultimo_checkin).toLocaleDateString() 
+                  : 'Never'}
+              </td>
               <td>
                 <button className="btn-sm">View</button>
                 <button className="btn-sm danger">Block</button>

@@ -16,11 +16,14 @@ export default function PaymentManagement() {
 
   const fetchPendingPayments = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/api/admin/payments/pending');
-      setPayments(response.data);
-      setLoading(false);
+      // Extract data from API response { success, data, count, totalAmount, timestamp }
+      setPayments(response.data.data || []);
+      console.log('✅ Payments loaded:', response.data.count, 'pending');
     } catch (error) {
-      console.error('Failed to fetch payments:', error);
+      console.error('❌ Failed to fetch payments:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -30,11 +33,11 @@ export default function PaymentManagement() {
   return (
     <div className="payment-management">
       <h2>💳 Payment Management</h2>
-      <p>Total Pending: ${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</p>
+      <p>Total Pending: ${payments.reduce((sum, p) => sum + (p.monto || 0), 0).toFixed(0)}</p>
       <table className="payments-table">
         <thead>
           <tr>
-            <th>Member</th>
+            <th>Member ID</th>
             <th>Amount</th>
             <th>Due Date</th>
             <th>Days Overdue</th>
@@ -45,15 +48,15 @@ export default function PaymentManagement() {
         <tbody>
           {payments.map(payment => (
             <tr key={payment.id}>
-              <td>{payment.member_name}</td>
-              <td>${payment.amount.toFixed(2)}</td>
-              <td>{new Date(payment.due_date).toLocaleDateString()}</td>
-              <td className={payment.days_overdue > 0 ? 'overdue' : ''}>
-                {payment.days_overdue > 0 ? `+${payment.days_overdue}` : 'On time'}
+              <td>{payment.member_id}</td>
+              <td>${payment.monto ? payment.monto.toFixed(0) : '0'}</td>
+              <td>{new Date(payment.fecha_vencimiento).toLocaleDateString()}</td>
+              <td className={payment.daysOverdue > 0 ? 'overdue' : ''}>
+                {payment.daysOverdue > 0 ? `+${payment.daysOverdue}` : 'On time'}
               </td>
               <td>
-                <span className={`status-badge ${payment.status}`}>
-                  {payment.status}
+                <span className={`status-badge ${payment.estado}`}>
+                  {payment.estado}
                 </span>
               </td>
               <td>
