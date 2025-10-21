@@ -54,6 +54,8 @@ const instructorPanelRoutes = require('./routes/api/instructor-panel');
 const dashboardRoutes = require('./routes/api/dashboard');
 // PROMPT 19: Authentication routes
 const authRoutes = require('./routes/api/auth');
+// SEMANA 2: Admin routes
+const adminRoutes = require('./routes/api/admin');
 
 // Basic routes
 app.get('/', (req, res) => {
@@ -82,6 +84,8 @@ app.use('/api/surveys', surveysRoutes);
 app.use('/api/replacements', replacementsRoutes);
 app.use('/api/instructor-panel', instructorPanelRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+// SEMANA 2: Admin routes
+app.use('/api/admin', adminRoutes);
 
 // PROMPT 11: Valley Optimization Routes
 const valleyOptimizationRoutes = require('./routes/api/valley-optimization');
