@@ -459,7 +459,7 @@ describe('AI Decision Service Unit Tests', () => {
   describe('exported functions', () => {
     
     test('generatePriorityDecisions should be defined', () => {
-      expect(typeof service.generatePriorityDecisions).toBe('function');
+      expect(typeof cacheService.generatePriorityDecisions).toBe('function');
     });
 
     test('generatePriorityDecisions should handle errors gracefully', async () => {
@@ -473,7 +473,7 @@ describe('AI Decision Service Unit Tests', () => {
     
 
     test('getTodayDecisions should be defined', () => {
-      expect(typeof service.getTodayDecisions).toBe('function');
+      expect(typeof cacheService.getTodayDecisions).toBe('function');
     });
 
     test('getTodayDecisions should handle errors gracefully', async () => {
@@ -487,7 +487,7 @@ describe('AI Decision Service Unit Tests', () => {
     
 
     test('completeDecision should be defined', () => {
-      expect(typeof service.completeDecision).toBe('function');
+      expect(typeof cacheService.completeDecision).toBe('function');
     });
 
     test('completeDecision should handle errors gracefully', async () => {
@@ -501,7 +501,7 @@ describe('AI Decision Service Unit Tests', () => {
     
 
     test('dismissDecision should be defined', () => {
-      expect(typeof service.dismissDecision).toBe('function');
+      expect(typeof cacheService.dismissDecision).toBe('function');
     });
 
     test('dismissDecision should handle errors gracefully', async () => {

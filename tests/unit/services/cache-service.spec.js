@@ -360,7 +360,7 @@ describe('Cache Service Unit Tests', () => {
   describe('exported functions', () => {
     
     test('redis should be defined', () => {
-      expect(typeof service.redis).toBe('function');
+      expect(typeof cacheService.redis).toBe('function');
     });
 
     test('redis should handle errors gracefully', async () => {
@@ -374,7 +374,7 @@ describe('Cache Service Unit Tests', () => {
     
 
     test('TTL_STRATEGIES should be defined', () => {
-      expect(typeof service.TTL_STRATEGIES).toBe('function');
+      expect(typeof cacheService.TTL_STRATEGIES).toBe('function');
     });
 
     test('TTL_STRATEGIES should handle errors gracefully', async () => {
@@ -388,7 +388,7 @@ describe('Cache Service Unit Tests', () => {
     
 
     test('CACHE_KEYS should be defined', () => {
-      expect(typeof service.CACHE_KEYS).toBe('function');
+      expect(typeof cacheService.CACHE_KEYS).toBe('function');
     });
 
     test('CACHE_KEYS should handle errors gracefully', async () => {
@@ -402,7 +402,7 @@ describe('Cache Service Unit Tests', () => {
     
 
     test('Core should be defined', () => {
-      expect(typeof service.Core).toBe('function');
+      expect(typeof cacheService.Core).toBe('function');
     });
 
     test('Core should handle errors gracefully', async () => {
@@ -416,7 +416,7 @@ describe('Cache Service Unit Tests', () => {
     
 
     test('functions should be defined', () => {
-      expect(typeof service.functions).toBe('function');
+      expect(typeof cacheService.functions).toBe('function');
     });
 
     test('functions should handle errors gracefully', async () => {
