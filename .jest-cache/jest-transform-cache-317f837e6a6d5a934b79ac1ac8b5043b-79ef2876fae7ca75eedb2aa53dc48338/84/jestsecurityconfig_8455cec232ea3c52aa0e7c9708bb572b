@@ -1,0 +1,67 @@
+111f41caf59b8bf6a6882de6b2fd1f94
+/* istanbul ignore next */
+function cov_qpv2gkxdq() {
+  var path = "/home/eevan/ProyectosIA/GIM_AI/jest.security.config.js";
+  var hash = "5b9ba5c3994459817020d7836387ec33901131af";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/home/eevan/ProyectosIA/GIM_AI/jest.security.config.js",
+    statementMap: {
+      "0": {
+        start: {
+          line: 1,
+          column: 0
+        },
+        end: {
+          line: 29,
+          column: 2
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "5b9ba5c3994459817020d7836387ec33901131af"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_qpv2gkxdq = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_qpv2gkxdq();
+cov_qpv2gkxdq().s[0]++;
+module.exports = {
+  displayName: "Security Tests",
+  testMatch: ["<rootDir>/tests/security/**/*.spec.js"],
+  setupFilesAfterEnv: ["<rootDir>/tests/security/jest.setup.security.js"],
+  testEnvironment: "node",
+  collectCoverageFrom: ["security/**/*.js", "routes/**/*.js", "services/**/*.js", "!**/node_modules/**", "!**/*.spec.js", "!**/*.test.js"],
+  coverageReporters: ["text", "lcov", "html"],
+  coverageDirectory: "coverage/security",
+  verbose: true,
+  forceExit: true,
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  // Security tests may need longer timeouts for crypto operations
+  testTimeout: 10000,
+  // Mock timers for rate limiting tests
+  fakeTimers: {
+    enableGlobally: false
+  }
+};
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfcXB2MmdreGRxIiwiYWN0dWFsQ292ZXJhZ2UiLCJzIiwibW9kdWxlIiwiZXhwb3J0cyIsImRpc3BsYXlOYW1lIiwidGVzdE1hdGNoIiwic2V0dXBGaWxlc0FmdGVyRW52IiwidGVzdEVudmlyb25tZW50IiwiY29sbGVjdENvdmVyYWdlRnJvbSIsImNvdmVyYWdlUmVwb3J0ZXJzIiwiY292ZXJhZ2VEaXJlY3RvcnkiLCJ2ZXJib3NlIiwiZm9yY2VFeGl0IiwiY2xlYXJNb2NrcyIsInJlc2V0TW9ja3MiLCJyZXN0b3JlTW9ja3MiLCJ0ZXN0VGltZW91dCIsImZha2VUaW1lcnMiLCJlbmFibGVHbG9iYWxseSJdLCJzb3VyY2VzIjpbImplc3Quc2VjdXJpdHkuY29uZmlnLmpzIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0ge1xuICBkaXNwbGF5TmFtZTogXCJTZWN1cml0eSBUZXN0c1wiLFxuICB0ZXN0TWF0Y2g6IFtcIjxyb290RGlyPi90ZXN0cy9zZWN1cml0eS8qKi8qLnNwZWMuanNcIl0sXG4gIHNldHVwRmlsZXNBZnRlckVudjogW1xuICAgIFwiPHJvb3REaXI+L3Rlc3RzL3NlY3VyaXR5L2plc3Quc2V0dXAuc2VjdXJpdHkuanNcIlxuICBdLFxuICB0ZXN0RW52aXJvbm1lbnQ6IFwibm9kZVwiLFxuICBjb2xsZWN0Q292ZXJhZ2VGcm9tOiBbXG4gICAgXCJzZWN1cml0eS8qKi8qLmpzXCIsXG4gICAgXCJyb3V0ZXMvKiovKi5qc1wiLFxuICAgIFwic2VydmljZXMvKiovKi5qc1wiLFxuICAgIFwiISoqL25vZGVfbW9kdWxlcy8qKlwiLFxuICAgIFwiISoqLyouc3BlYy5qc1wiLFxuICAgIFwiISoqLyoudGVzdC5qc1wiXG4gIF0sXG4gIGNvdmVyYWdlUmVwb3J0ZXJzOiBbXCJ0ZXh0XCIsIFwibGNvdlwiLCBcImh0bWxcIl0sXG4gIGNvdmVyYWdlRGlyZWN0b3J5OiBcImNvdmVyYWdlL3NlY3VyaXR5XCIsXG4gIHZlcmJvc2U6IHRydWUsXG4gIGZvcmNlRXhpdDogdHJ1ZSxcbiAgY2xlYXJNb2NrczogdHJ1ZSxcbiAgcmVzZXRNb2NrczogdHJ1ZSxcbiAgcmVzdG9yZU1vY2tzOiB0cnVlLFxuICAvLyBTZWN1cml0eSB0ZXN0cyBtYXkgbmVlZCBsb25nZXIgdGltZW91dHMgZm9yIGNyeXB0byBvcGVyYXRpb25zXG4gIHRlc3RUaW1lb3V0OiAxMDAwMCxcbiAgLy8gTW9jayB0aW1lcnMgZm9yIHJhdGUgbGltaXRpbmcgdGVzdHNcbiAgZmFrZVRpbWVyczoge1xuICAgIGVuYWJsZUdsb2JhbGx5OiBmYWxzZVxuICB9XG59O1xuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SUFlWTtJQUFBQSxhQUFBLFlBQUFBLENBQUE7TUFBQSxPQUFBQyxjQUFBO0lBQUE7RUFBQTtFQUFBLE9BQUFBLGNBQUE7QUFBQTtBQUFBRCxhQUFBO0FBQUFBLGFBQUEsR0FBQUUsQ0FBQTtBQWZaQyxNQUFNLENBQUNDLE9BQU8sR0FBRztFQUNmQyxXQUFXLEVBQUUsZ0JBQWdCO0VBQzdCQyxTQUFTLEVBQUUsQ0FBQyx1Q0FBdUMsQ0FBQztFQUNwREMsa0JBQWtCLEVBQUUsQ0FDbEIsaURBQWlELENBQ2xEO0VBQ0RDLGVBQWUsRUFBRSxNQUFNO0VBQ3ZCQyxtQkFBbUIsRUFBRSxDQUNuQixrQkFBa0IsRUFDbEIsZ0JBQWdCLEVBQ2hCLGtCQUFrQixFQUNsQixxQkFBcUIsRUFDckIsZUFBZSxFQUNmLGVBQWUsQ0FDaEI7RUFDREMsaUJBQWlCLEVBQUUsQ0FBQyxNQUFNLEVBQUUsTUFBTSxFQUFFLE1BQU0sQ0FBQztFQUMzQ0MsaUJBQWlCLEVBQUUsbUJBQW1CO0VBQ3RDQyxPQUFPLEVBQUUsSUFBSTtFQUNiQyxTQUFTLEVBQUUsSUFBSTtFQUNmQyxVQUFVLEVBQUUsSUFBSTtFQUNoQkMsVUFBVSxFQUFFLElBQUk7RUFDaEJDLFlBQVksRUFBRSxJQUFJO0VBQ2xCO0VBQ0FDLFdBQVcsRUFBRSxLQUFLO0VBQ2xCO0VBQ0FDLFVBQVUsRUFBRTtJQUNWQyxjQUFjLEVBQUU7RUFDbEI7QUFDRixDQUFDIiwiaWdub3JlTGlzdCI6W119

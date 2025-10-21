@@ -1,0 +1,247 @@
+fbaf43030d4caba75fdfc34ff1443ad6
+/* istanbul ignore next */
+function cov_q1dafg7sh() {
+  var path = "/home/eevan/ProyectosIA/GIM_AI/jest.config.js";
+  var hash = "08a3c8026638ea47dccca72a608f38a13e3783cd";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/home/eevan/ProyectosIA/GIM_AI/jest.config.js",
+    statementMap: {
+      "0": {
+        start: {
+          line: 1,
+          column: 13
+        },
+        end: {
+          line: 1,
+          column: 36
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 44,
+          column: 2
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 35,
+            column: 16
+          },
+          end: {
+            line: 35,
+            column: 29
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 35,
+            column: 23
+          },
+          end: {
+            line: 35,
+            column: 25
+          }
+        }, {
+          start: {
+            line: 35,
+            column: 28
+          },
+          end: {
+            line: 35,
+            column: 29
+          }
+        }],
+        line: 35
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 36,
+            column: 17
+          },
+          end: {
+            line: 36,
+            column: 30
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 36,
+            column: 24
+          },
+          end: {
+            line: 36,
+            column: 26
+          }
+        }, {
+          start: {
+            line: 36,
+            column: 29
+          },
+          end: {
+            line: 36,
+            column: 30
+          }
+        }],
+        line: 36
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 37,
+            column: 13
+          },
+          end: {
+            line: 37,
+            column: 26
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 37,
+            column: 20
+          },
+          end: {
+            line: 37,
+            column: 22
+          }
+        }, {
+          start: {
+            line: 37,
+            column: 25
+          },
+          end: {
+            line: 37,
+            column: 26
+          }
+        }],
+        line: 37
+      },
+      "3": {
+        loc: {
+          start: {
+            line: 38,
+            column: 18
+          },
+          end: {
+            line: 38,
+            column: 31
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 38,
+            column: 25
+          },
+          end: {
+            line: 38,
+            column: 27
+          }
+        }, {
+          start: {
+            line: 38,
+            column: 30
+          },
+          end: {
+            line: 38,
+            column: 31
+          }
+        }],
+        line: 38
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0
+    },
+    f: {},
+    b: {
+      "0": [0, 0],
+      "1": [0, 0],
+      "2": [0, 0],
+      "3": [0, 0]
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "08a3c8026638ea47dccca72a608f38a13e3783cd"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_q1dafg7sh = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_q1dafg7sh();
+const isCI =
+/* istanbul ignore next */
+(cov_q1dafg7sh().s[0]++, Boolean(process.env.CI));
+/* istanbul ignore next */
+cov_q1dafg7sh().s[1]++;
+module.exports = {
+  testEnvironment: 'node',
+  coverageDirectory: 'coverage',
+  cacheDirectory: '.jest-cache',
+  collectCoverageFrom: ['**/*.js', '!node_modules/**', '!coverage/**', '!tests/**', '!**/node_modules/**'],
+  testMatch: ['**/tests/**/*.test.js', '**/tests/**/*.spec.js'],
+  testPathIgnorePatterns: ['/node_modules/'],
+  transform: {
+    '^.+\\.js$': 'babel-jest'
+  },
+  transformIgnorePatterns: ['node_modules/(?!(@supabase|@so-ric|color|color-string|@dabh|diagnostics)/)'],
+  moduleNameMapper: {
+    '^winston$': '<rootDir>/tests/__mocks__/winston.js',
+    '^winston-daily-rotate-file$': '<rootDir>/tests/__mocks__/winston-daily-rotate-file.js',
+    '^uuid$': '<rootDir>/tests/__mocks__/uuid.js',
+    '^../../whatsapp/client/sender$': '<rootDir>/tests/__mocks__/whatsapp-sender.js',
+    '^../whatsapp/client/sender$': '<rootDir>/tests/__mocks__/whatsapp-sender.js',
+    '^whatsapp/client/sender$': '<rootDir>/tests/__mocks__/whatsapp-sender.js'
+  },
+  coverageThreshold: {
+    global: {
+      branches: isCI ?
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[0][0]++, 70) :
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[0][1]++, 0),
+      functions: isCI ?
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[1][0]++, 70) :
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[1][1]++, 0),
+      lines: isCI ?
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[2][0]++, 70) :
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[2][1]++, 0),
+      statements: isCI ?
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[3][0]++, 70) :
+      /* istanbul ignore next */
+      (cov_q1dafg7sh().b[3][1]++, 0)
+    }
+  },
+  verbose: true,
+  testTimeout: 10000,
+  setupFiles: ['<rootDir>/tests/jest.setup.js']
+};
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfcTFkYWZnN3NoIiwiYWN0dWFsQ292ZXJhZ2UiLCJpc0NJIiwicyIsIkJvb2xlYW4iLCJwcm9jZXNzIiwiZW52IiwiQ0kiLCJtb2R1bGUiLCJleHBvcnRzIiwidGVzdEVudmlyb25tZW50IiwiY292ZXJhZ2VEaXJlY3RvcnkiLCJjYWNoZURpcmVjdG9yeSIsImNvbGxlY3RDb3ZlcmFnZUZyb20iLCJ0ZXN0TWF0Y2giLCJ0ZXN0UGF0aElnbm9yZVBhdHRlcm5zIiwidHJhbnNmb3JtIiwidHJhbnNmb3JtSWdub3JlUGF0dGVybnMiLCJtb2R1bGVOYW1lTWFwcGVyIiwiY292ZXJhZ2VUaHJlc2hvbGQiLCJnbG9iYWwiLCJicmFuY2hlcyIsImIiLCJmdW5jdGlvbnMiLCJsaW5lcyIsInN0YXRlbWVudHMiLCJ2ZXJib3NlIiwidGVzdFRpbWVvdXQiLCJzZXR1cEZpbGVzIl0sInNvdXJjZXMiOlsiamVzdC5jb25maWcuanMiXSwic291cmNlc0NvbnRlbnQiOlsiY29uc3QgaXNDSSA9IEJvb2xlYW4ocHJvY2Vzcy5lbnYuQ0kpO1xyXG5cclxubW9kdWxlLmV4cG9ydHMgPSB7XHJcbiAgdGVzdEVudmlyb25tZW50OiAnbm9kZScsXHJcbiAgY292ZXJhZ2VEaXJlY3Rvcnk6ICdjb3ZlcmFnZScsXHJcbiAgY2FjaGVEaXJlY3Rvcnk6ICcuamVzdC1jYWNoZScsXHJcbiAgY29sbGVjdENvdmVyYWdlRnJvbTogW1xyXG4gICAgJyoqLyouanMnLFxyXG4gICAgJyFub2RlX21vZHVsZXMvKionLFxyXG4gICAgJyFjb3ZlcmFnZS8qKicsXHJcbiAgICAnIXRlc3RzLyoqJyxcclxuICAgICchKiovbm9kZV9tb2R1bGVzLyoqJyxcclxuICBdLFxyXG4gIHRlc3RNYXRjaDogW1xyXG4gICAgJyoqL3Rlc3RzLyoqLyoudGVzdC5qcycsXHJcbiAgICAnKiovdGVzdHMvKiovKi5zcGVjLmpzJyxcclxuICBdLFxyXG4gIHRlc3RQYXRoSWdub3JlUGF0dGVybnM6IFsnL25vZGVfbW9kdWxlcy8nXSxcclxuICB0cmFuc2Zvcm06IHtcclxuICAgICdeLitcXFxcLmpzJCc6ICdiYWJlbC1qZXN0JyxcclxuICB9LFxyXG4gIHRyYW5zZm9ybUlnbm9yZVBhdHRlcm5zOiBbXHJcbiAgICAnbm9kZV9tb2R1bGVzLyg/IShAc3VwYWJhc2V8QHNvLXJpY3xjb2xvcnxjb2xvci1zdHJpbmd8QGRhYmh8ZGlhZ25vc3RpY3MpLyknXHJcbiAgXSxcclxuICBtb2R1bGVOYW1lTWFwcGVyOiB7XHJcbiAgICAnXndpbnN0b24kJzogJzxyb290RGlyPi90ZXN0cy9fX21vY2tzX18vd2luc3Rvbi5qcycsXHJcbiAgICAnXndpbnN0b24tZGFpbHktcm90YXRlLWZpbGUkJzogJzxyb290RGlyPi90ZXN0cy9fX21vY2tzX18vd2luc3Rvbi1kYWlseS1yb3RhdGUtZmlsZS5qcycsXHJcbiAgICAnXnV1aWQkJzogJzxyb290RGlyPi90ZXN0cy9fX21vY2tzX18vdXVpZC5qcycsXHJcbiAgICAnXi4uLy4uL3doYXRzYXBwL2NsaWVudC9zZW5kZXIkJzogJzxyb290RGlyPi90ZXN0cy9fX21vY2tzX18vd2hhdHNhcHAtc2VuZGVyLmpzJyxcclxuICAgICdeLi4vd2hhdHNhcHAvY2xpZW50L3NlbmRlciQnOiAnPHJvb3REaXI+L3Rlc3RzL19fbW9ja3NfXy93aGF0c2FwcC1zZW5kZXIuanMnLFxyXG4gICAgJ153aGF0c2FwcC9jbGllbnQvc2VuZGVyJCc6ICc8cm9vdERpcj4vdGVzdHMvX19tb2Nrc19fL3doYXRzYXBwLXNlbmRlci5qcycsXHJcbiAgfSxcclxuICBjb3ZlcmFnZVRocmVzaG9sZDoge1xyXG4gICAgZ2xvYmFsOiB7XHJcbiAgICAgIGJyYW5jaGVzOiBpc0NJID8gNzAgOiAwLFxyXG4gICAgICBmdW5jdGlvbnM6IGlzQ0kgPyA3MCA6IDAsXHJcbiAgICAgIGxpbmVzOiBpc0NJID8gNzAgOiAwLFxyXG4gICAgICBzdGF0ZW1lbnRzOiBpc0NJID8gNzAgOiAwLFxyXG4gICAgfSxcclxuICB9LFxyXG4gIHZlcmJvc2U6IHRydWUsXHJcbiAgdGVzdFRpbWVvdXQ6IDEwMDAwLFxyXG4gIHNldHVwRmlsZXM6IFsnPHJvb3REaXI+L3Rlc3RzL2plc3Quc2V0dXAuanMnXSxcclxufTtcclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztJQWVZO0lBQUFBLGFBQUEsWUFBQUEsQ0FBQTtNQUFBLE9BQUFDLGNBQUE7SUFBQTtFQUFBO0VBQUEsT0FBQUEsY0FBQTtBQUFBO0FBQUFELGFBQUE7QUFmWixNQUFNRSxJQUFJO0FBQUE7QUFBQSxDQUFBRixhQUFBLEdBQUFHLENBQUEsT0FBR0MsT0FBTyxDQUFDQyxPQUFPLENBQUNDLEdBQUcsQ0FBQ0MsRUFBRSxDQUFDO0FBQUM7QUFBQVAsYUFBQSxHQUFBRyxDQUFBO0FBRXJDSyxNQUFNLENBQUNDLE9BQU8sR0FBRztFQUNmQyxlQUFlLEVBQUUsTUFBTTtFQUN2QkMsaUJBQWlCLEVBQUUsVUFBVTtFQUM3QkMsY0FBYyxFQUFFLGFBQWE7RUFDN0JDLG1CQUFtQixFQUFFLENBQ25CLFNBQVMsRUFDVCxrQkFBa0IsRUFDbEIsY0FBYyxFQUNkLFdBQVcsRUFDWCxxQkFBcUIsQ0FDdEI7RUFDREMsU0FBUyxFQUFFLENBQ1QsdUJBQXVCLEVBQ3ZCLHVCQUF1QixDQUN4QjtFQUNEQyxzQkFBc0IsRUFBRSxDQUFDLGdCQUFnQixDQUFDO0VBQzFDQyxTQUFTLEVBQUU7SUFDVCxXQUFXLEVBQUU7RUFDZixDQUFDO0VBQ0RDLHVCQUF1QixFQUFFLENBQ3ZCLDRFQUE0RSxDQUM3RTtFQUNEQyxnQkFBZ0IsRUFBRTtJQUNoQixXQUFXLEVBQUUsc0NBQXNDO0lBQ25ELDZCQUE2QixFQUFFLHdEQUF3RDtJQUN2RixRQUFRLEVBQUUsbUNBQW1DO0lBQzdDLGdDQUFnQyxFQUFFLDhDQUE4QztJQUNoRiw2QkFBNkIsRUFBRSw4Q0FBOEM7SUFDN0UsMEJBQTBCLEVBQUU7RUFDOUIsQ0FBQztFQUNEQyxpQkFBaUIsRUFBRTtJQUNqQkMsTUFBTSxFQUFFO01BQ05DLFFBQVEsRUFBRW5CLElBQUk7TUFBQTtNQUFBLENBQUFGLGFBQUEsR0FBQXNCLENBQUEsVUFBRyxFQUFFO01BQUE7TUFBQSxDQUFBdEIsYUFBQSxHQUFBc0IsQ0FBQSxVQUFHLENBQUM7TUFDdkJDLFNBQVMsRUFBRXJCLElBQUk7TUFBQTtNQUFBLENBQUFGLGFBQUEsR0FBQXNCLENBQUEsVUFBRyxFQUFFO01BQUE7TUFBQSxDQUFBdEIsYUFBQSxHQUFBc0IsQ0FBQSxVQUFHLENBQUM7TUFDeEJFLEtBQUssRUFBRXRCLElBQUk7TUFBQTtNQUFBLENBQUFGLGFBQUEsR0FBQXNCLENBQUEsVUFBRyxFQUFFO01BQUE7TUFBQSxDQUFBdEIsYUFBQSxHQUFBc0IsQ0FBQSxVQUFHLENBQUM7TUFDcEJHLFVBQVUsRUFBRXZCLElBQUk7TUFBQTtNQUFBLENBQUFGLGFBQUEsR0FBQXNCLENBQUEsVUFBRyxFQUFFO01BQUE7TUFBQSxDQUFBdEIsYUFBQSxHQUFBc0IsQ0FBQSxVQUFHLENBQUM7SUFDM0I7RUFDRixDQUFDO0VBQ0RJLE9BQU8sRUFBRSxJQUFJO0VBQ2JDLFdBQVcsRUFBRSxLQUFLO0VBQ2xCQyxVQUFVLEVBQUUsQ0FBQywrQkFBK0I7QUFDOUMsQ0FBQyIsImlnbm9yZUxpc3QiOltdfQ==

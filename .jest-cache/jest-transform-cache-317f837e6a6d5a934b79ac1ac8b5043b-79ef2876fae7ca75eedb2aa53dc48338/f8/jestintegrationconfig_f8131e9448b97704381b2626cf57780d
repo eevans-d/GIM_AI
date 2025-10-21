@@ -1,0 +1,61 @@
+62a06ccabf5c17b817dcb7cc053914c8
+/* istanbul ignore next */
+function cov_13djsormcm() {
+  var path = "/home/eevan/ProyectosIA/GIM_AI/jest.integration.config.js";
+  var hash = "d29e0379b4751f13050652795cfc223e4604f6b0";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/home/eevan/ProyectosIA/GIM_AI/jest.integration.config.js",
+    statementMap: {
+      "0": {
+        start: {
+          line: 1,
+          column: 0
+        },
+        end: {
+          line: 22,
+          column: 2
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "d29e0379b4751f13050652795cfc223e4604f6b0"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_13djsormcm = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_13djsormcm();
+cov_13djsormcm().s[0]++;
+module.exports = {
+  displayName: "Integration Tests",
+  testMatch: ["<rootDir>/tests/integration/**/*.spec.js"],
+  setupFilesAfterEnv: ["<rootDir>/tests/integration/jest.setup.integration.js"],
+  testEnvironment: "node",
+  collectCoverageFrom: ["routes/**/*.js", "services/**/*.js", "!**/node_modules/**", "!**/*.spec.js", "!**/*.test.js"],
+  coverageReporters: ["text", "lcov", "html"],
+  coverageDirectory: "coverage/integration",
+  verbose: true,
+  forceExit: true,
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true
+};
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMTNkanNvcm1jbSIsImFjdHVhbENvdmVyYWdlIiwicyIsIm1vZHVsZSIsImV4cG9ydHMiLCJkaXNwbGF5TmFtZSIsInRlc3RNYXRjaCIsInNldHVwRmlsZXNBZnRlckVudiIsInRlc3RFbnZpcm9ubWVudCIsImNvbGxlY3RDb3ZlcmFnZUZyb20iLCJjb3ZlcmFnZVJlcG9ydGVycyIsImNvdmVyYWdlRGlyZWN0b3J5IiwidmVyYm9zZSIsImZvcmNlRXhpdCIsImNsZWFyTW9ja3MiLCJyZXNldE1vY2tzIiwicmVzdG9yZU1vY2tzIl0sInNvdXJjZXMiOlsiamVzdC5pbnRlZ3JhdGlvbi5jb25maWcuanMiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSB7XG4gIGRpc3BsYXlOYW1lOiBcIkludGVncmF0aW9uIFRlc3RzXCIsXG4gIHRlc3RNYXRjaDogW1wiPHJvb3REaXI+L3Rlc3RzL2ludGVncmF0aW9uLyoqLyouc3BlYy5qc1wiXSxcbiAgc2V0dXBGaWxlc0FmdGVyRW52OiBbXG4gICAgXCI8cm9vdERpcj4vdGVzdHMvaW50ZWdyYXRpb24vamVzdC5zZXR1cC5pbnRlZ3JhdGlvbi5qc1wiXG4gIF0sXG4gIHRlc3RFbnZpcm9ubWVudDogXCJub2RlXCIsXG4gIGNvbGxlY3RDb3ZlcmFnZUZyb206IFtcbiAgICBcInJvdXRlcy8qKi8qLmpzXCIsXG4gICAgXCJzZXJ2aWNlcy8qKi8qLmpzXCIsIFxuICAgIFwiISoqL25vZGVfbW9kdWxlcy8qKlwiLFxuICAgIFwiISoqLyouc3BlYy5qc1wiLFxuICAgIFwiISoqLyoudGVzdC5qc1wiXG4gIF0sXG4gIGNvdmVyYWdlUmVwb3J0ZXJzOiBbXCJ0ZXh0XCIsIFwibGNvdlwiLCBcImh0bWxcIl0sXG4gIGNvdmVyYWdlRGlyZWN0b3J5OiBcImNvdmVyYWdlL2ludGVncmF0aW9uXCIsXG4gIHZlcmJvc2U6IHRydWUsXG4gIGZvcmNlRXhpdDogdHJ1ZSxcbiAgY2xlYXJNb2NrczogdHJ1ZSxcbiAgcmVzZXRNb2NrczogdHJ1ZSxcbiAgcmVzdG9yZU1vY2tzOiB0cnVlXG59OyJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lBZVk7SUFBQUEsY0FBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsY0FBQTtBQUFBQSxjQUFBLEdBQUFFLENBQUE7QUFmWkMsTUFBTSxDQUFDQyxPQUFPLEdBQUc7RUFDZkMsV0FBVyxFQUFFLG1CQUFtQjtFQUNoQ0MsU0FBUyxFQUFFLENBQUMsMENBQTBDLENBQUM7RUFDdkRDLGtCQUFrQixFQUFFLENBQ2xCLHVEQUF1RCxDQUN4RDtFQUNEQyxlQUFlLEVBQUUsTUFBTTtFQUN2QkMsbUJBQW1CLEVBQUUsQ0FDbkIsZ0JBQWdCLEVBQ2hCLGtCQUFrQixFQUNsQixxQkFBcUIsRUFDckIsZUFBZSxFQUNmLGVBQWUsQ0FDaEI7RUFDREMsaUJBQWlCLEVBQUUsQ0FBQyxNQUFNLEVBQUUsTUFBTSxFQUFFLE1BQU0sQ0FBQztFQUMzQ0MsaUJBQWlCLEVBQUUsc0JBQXNCO0VBQ3pDQyxPQUFPLEVBQUUsSUFBSTtFQUNiQyxTQUFTLEVBQUUsSUFBSTtFQUNmQyxVQUFVLEVBQUUsSUFBSTtFQUNoQkMsVUFBVSxFQUFFLElBQUk7RUFDaEJDLFlBQVksRUFBRTtBQUNoQixDQUFDIiwiaWdub3JlTGlzdCI6W119

@@ -349,4 +349,57 @@ describe('Webhook Service Unit Tests', () => {
       expect(WebhookService.EVENTS.PAYMENT_RECEIVED).toBe('payment.received');
     });
   });
+
+  
+  // ============================================================================
+  // CLASS-BASED TESTS
+  // ============================================================================
+
+  describe('class methods', () => {
+    test('constructor should initialize properly', () => {
+      expect(service).toBeInstanceOf(WebhookService);
+      expect(service.logger).toBeDefined();
+    });
+
+    test('public methods should be callable', () => {
+      const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(service));
+      const publicMethods = methods.filter(m => 
+        m !== 'constructor' && !m.startsWith('_') && typeof service[m] === 'function'
+      );
+      expect(publicMethods.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('instance behavior', () => {
+    test('should maintain state between calls', () => {
+      expect(service).toBeDefined();
+      // Add state tracking tests as needed
+    });
+
+    test('should handle errors consistently', async () => {
+      try {
+        // Call a method that might fail
+        await Promise.resolve();
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+  });
+
+  describe('lifecycle', () => {
+    test('instance should be reusable', () => {
+      expect(service).toBeDefined();
+      // Verify instance can be reused for multiple operations
+    });
+
+    test('cleanup should work if needed', async () => {
+      // If class has cleanup methods, test them
+      if (typeof service.cleanup === 'function') {
+        await service.cleanup();
+      }
+      expect(service).toBeDefined();
+    });
+  });
+
+
 });

@@ -1,0 +1,29 @@
+df1075b1e29c9be7e79bbc8f47b0954c
+"use strict";
+
+const ReactivationService = require('../../../services/reactivation-service.js');
+const {
+  createMockLogger
+} = require('../../__mocks__/winston');
+describe('ReactivationService', () => {
+  let service;
+  let mockLogger;
+  beforeEach(() => {
+    mockLogger = createMockLogger();
+    service = new ReactivationService(mockLogger);
+  });
+  describe('initialization', () => {
+    test('should initialize with logger', () => {
+      expect(service).toBeDefined();
+      expect(service.logger).toBeDefined();
+    });
+  });
+
+  // TODO: Add specific test cases for this service
+  // Review the service implementation and add tests for:
+  // - Constructor and initialization
+  // - Main methods
+  // - Error handling
+  // - Edge cases
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJSZWFjdGl2YXRpb25TZXJ2aWNlIiwicmVxdWlyZSIsImNyZWF0ZU1vY2tMb2dnZXIiLCJkZXNjcmliZSIsInNlcnZpY2UiLCJtb2NrTG9nZ2VyIiwiYmVmb3JlRWFjaCIsInRlc3QiLCJleHBlY3QiLCJ0b0JlRGVmaW5lZCIsImxvZ2dlciJdLCJzb3VyY2VzIjpbInJlYWN0aXZhdGlvbi1zZXJ2aWNlLnNwZWMuanMiXSwic291cmNlc0NvbnRlbnQiOlsiXG5jb25zdCBSZWFjdGl2YXRpb25TZXJ2aWNlID0gcmVxdWlyZSgnLi4vLi4vLi4vc2VydmljZXMvcmVhY3RpdmF0aW9uLXNlcnZpY2UuanMnKTtcbmNvbnN0IHsgY3JlYXRlTW9ja0xvZ2dlciB9ID0gcmVxdWlyZSgnLi4vLi4vX19tb2Nrc19fL3dpbnN0b24nKTtcblxuZGVzY3JpYmUoJ1JlYWN0aXZhdGlvblNlcnZpY2UnLCAoKSA9PiB7XG4gIGxldCBzZXJ2aWNlO1xuICBsZXQgbW9ja0xvZ2dlcjtcblxuICBiZWZvcmVFYWNoKCgpID0+IHtcbiAgICBtb2NrTG9nZ2VyID0gY3JlYXRlTW9ja0xvZ2dlcigpO1xuICAgIHNlcnZpY2UgPSBuZXcgUmVhY3RpdmF0aW9uU2VydmljZShtb2NrTG9nZ2VyKTtcbiAgfSk7XG5cbiAgZGVzY3JpYmUoJ2luaXRpYWxpemF0aW9uJywgKCkgPT4ge1xuICAgIHRlc3QoJ3Nob3VsZCBpbml0aWFsaXplIHdpdGggbG9nZ2VyJywgKCkgPT4ge1xuICAgICAgZXhwZWN0KHNlcnZpY2UpLnRvQmVEZWZpbmVkKCk7XG4gICAgICBleHBlY3Qoc2VydmljZS5sb2dnZXIpLnRvQmVEZWZpbmVkKCk7XG4gICAgfSk7XG4gIH0pO1xuXG4gIC8vIFRPRE86IEFkZCBzcGVjaWZpYyB0ZXN0IGNhc2VzIGZvciB0aGlzIHNlcnZpY2VcbiAgLy8gUmV2aWV3IHRoZSBzZXJ2aWNlIGltcGxlbWVudGF0aW9uIGFuZCBhZGQgdGVzdHMgZm9yOlxuICAvLyAtIENvbnN0cnVjdG9yIGFuZCBpbml0aWFsaXphdGlvblxuICAvLyAtIE1haW4gbWV0aG9kc1xuICAvLyAtIEVycm9yIGhhbmRsaW5nXG4gIC8vIC0gRWRnZSBjYXNlc1xufSk7XG4iXSwibWFwcGluZ3MiOiI7O0FBQ0EsTUFBTUEsbUJBQW1CLEdBQUdDLE9BQU8sQ0FBQywyQ0FBMkMsQ0FBQztBQUNoRixNQUFNO0VBQUVDO0FBQWlCLENBQUMsR0FBR0QsT0FBTyxDQUFDLHlCQUF5QixDQUFDO0FBRS9ERSxRQUFRLENBQUMscUJBQXFCLEVBQUUsTUFBTTtFQUNwQyxJQUFJQyxPQUFPO0VBQ1gsSUFBSUMsVUFBVTtFQUVkQyxVQUFVLENBQUMsTUFBTTtJQUNmRCxVQUFVLEdBQUdILGdCQUFnQixDQUFDLENBQUM7SUFDL0JFLE9BQU8sR0FBRyxJQUFJSixtQkFBbUIsQ0FBQ0ssVUFBVSxDQUFDO0VBQy9DLENBQUMsQ0FBQztFQUVGRixRQUFRLENBQUMsZ0JBQWdCLEVBQUUsTUFBTTtJQUMvQkksSUFBSSxDQUFDLCtCQUErQixFQUFFLE1BQU07TUFDMUNDLE1BQU0sQ0FBQ0osT0FBTyxDQUFDLENBQUNLLFdBQVcsQ0FBQyxDQUFDO01BQzdCRCxNQUFNLENBQUNKLE9BQU8sQ0FBQ00sTUFBTSxDQUFDLENBQUNELFdBQVcsQ0FBQyxDQUFDO0lBQ3RDLENBQUMsQ0FBQztFQUNKLENBQUMsQ0FBQzs7RUFFRjtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7QUFDRixDQUFDLENBQUMiLCJpZ25vcmVMaXN0IjpbXX0=
